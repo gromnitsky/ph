@@ -60,6 +60,21 @@ Return a pointer to a cell in ph-vl list or nil on error."
 
 	  (car (push (make-ph-ven :db db) ph-vl)))))
 
+(defun ph-venture-marshalling (pobj)
+  "Update POBJ in a marshalled form. Return t on success, nil otherwise.
+WARNING: it rewrites the file every time."
+  (cl-block nil
+	(unless (ph-ven-p pobj) (cl-return nil))
+
+	(condition-case err
+		;; most typical error would be "permission denied" if user has
+		;; opened a project on a read-only partition
+		(with-temp-file (ph-ven-db pobj)
+		  (insert (prin1-to-string pobj)))
+	  (error (cl-return nil)))
+	t
+	))
+
 
 
 (defun ph-vl-reset ()
