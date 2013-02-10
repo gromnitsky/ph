@@ -75,6 +75,22 @@ WARNING: it rewrites the file every time."
 	t
 	))
 
+(defun ph-venture-unmarshalling (file)
+  "Return parsed ph-ven object from FILE or nil on error."
+  (cl-block nil
+	(unless file (cl-return nil))
+
+	(let (pobj)
+	  (condition-case err
+		  (setq pobj
+				(read (with-current-buffer
+						  (find-file-noselect file) (buffer-string))))
+		(error (cl-return nil)))
+	  (unless (ph-ven-p pobj) (cl-return nil))
+
+	  pobj
+	  )))
+
 
 
 (defun ph-vl-reset ()

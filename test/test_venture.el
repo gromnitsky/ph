@@ -57,8 +57,7 @@
 	(should (ph-venture-marshalling p1))
 
 	;; read from the disk & compare
-	(setq p2 (read
-			  (with-current-buffer (find-file-noselect ".ph") (buffer-string))))
+	(setq p2 (ph-venture-unmarshalling ".ph"))
 	(should (ph-ven-p p2))
 	(should (equal (ph-ven-db p1) (ph-ven-db p2)))
 	(should (equal (ph-ven-version p1) (ph-ven-version p2)))
