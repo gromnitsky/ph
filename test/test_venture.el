@@ -26,6 +26,56 @@
 	(should (equal '("three" "two" "one") list1)) ; not portable
 	))
 
+(ert-deftest ph-venture-new()
+  (let (p1 p2 p21)
+	(ph-vl-reset)
+	(should (= 0 (ph-vl-size)))
+
+	(should-not (ph-venture-new nil))
+
+	(setq p1 (ph-venture-new "/foo"))
+	(should (= 1 (ph-vl-size)))
+
+	;; try to create the same object
+	(setq p2 (ph-venture-new "/foo"))
+	(should (= 1 (ph-vl-size)))
+
+	;; find & compare
+	(setq p21 (ph-vl-find (ph-db-get "/foo")))
+	(should (equal p2 p21))
+
+	(ph-vl-reset)
+  ))
+
 
+
+(ert-deftest ph-vl-find()
+  (let ((p1 (make-ph-ven :db "/foo/bar/.ph"))
+		(p2 (make-ph-ven :db "/foobar/.ph"))
+		(p3 (make-ph-ven :db "/.ph"))
+		p21
+		p22)
+
+	(push p1 ph-vl)
+	(push p2 ph-vl)
+	(push p3 ph-vl)
+
+	(should-not (ph-vl-find nil))
+	(should-not (ph-vl-find "BOGUS"))
+	(should (equal p2 (ph-vl-find "/foobar/.ph")))
+
+	;; check that the return value is a pointer, not a copied object
+	(setq p21 (ph-vl-find "/foobar/.ph"))
+	(ph-venture-opfl-add p21 "one")
+	(should (= 1 (ph-venture-opfl-size p21)))
+
+	(setq p22 (ph-vl-find "/foobar/.ph"))
+	(should (> (ph-venture-opfl-get p22 "one") 100))
+	(ph-venture-opfl-rm p22 "one")
+
+	(should (= 0 (ph-venture-opfl-size p21)))
+
+	(ph-vl-reset)
+  ))
 
 (ert-run-tests-batch-and-exit (car argv))
