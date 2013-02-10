@@ -32,12 +32,13 @@
 	(should (= 0 (ph-vl-size)))
 
 	(should-not (ph-venture-new nil))
+	(should-not (ph-venture-new 1))
 
-	(setq p1 (ph-venture-new "/foo"))
+	(setq p1 (ph-venture-new (ph-db-get "/foo")))
 	(should (= 1 (ph-vl-size)))
 
 	;; try to create the same object
-	(setq p2 (ph-venture-new "/foo"))
+	(setq p2 (ph-venture-new (ph-db-get "/foo")))
 	(should (= 1 (ph-vl-size)))
 
 	;; find & compare

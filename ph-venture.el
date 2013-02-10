@@ -46,16 +46,17 @@
 			 (funcall blk key val))
 		   (ph-ven-opfl pobj)))
 
-(defun ph-venture-new (dir)
-  "Create a new ph-ven in DIR & add it to ph-vl.
-Return a pointer to a cell in ph-vl list or nil on error."
-  (cl-block nil
-	(unless dir (cl-return nil))
+(defun ph-venture-new (db)
+  "Create a new ph-ven with DB as db & add it to ph-vl.
+Return a pointer to a cell in ph-vl list or nil on error.
 
-	(let (cell db)
-	  (setq db (ph-db-get dir))
+Doesn't do any I/O."
+  (cl-block nil
+	(if (or (not db) (not (stringp db))) (cl-return nil))
+
+	(let (cell)
 	  (when (setq cell (ph-vl-find db))
-		(ph-warn 1 (format "project for %s is already loaded in emacs" dir))
+		(ph-warn 1 (format "project %s is already loaded in emacs" db))
 		(cl-return cell))
 
 	  (car (push (make-ph-ven :db db) ph-vl)))))
@@ -91,6 +92,10 @@ WARNING: it rewrites the file every time."
 	  pobj
 	  )))
 
+(defun ph-venture-clean (pobj dir)
+  (error "write me")
+  )
+
 
 
 (defun ph-vl-reset ()
@@ -121,6 +126,14 @@ WARNING: it rewrites the file every time."
   (if (not dir)
 	  nil
 	(concat (file-name-as-directory dir) ph-DB-NAME)))
+
+(defun ph-db-new (file)
+  (error "write me")
+  )
+
+(defun ph-db-find (dir)
+  (error "write me")
+  )
 
 
 
