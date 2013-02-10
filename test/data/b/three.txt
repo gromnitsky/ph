@@ -1,0 +1,5 @@
+ -- Function: puthash key value table
+     This function enters an association for KEY in TABLE, with value
+     VALUE.  If KEY already has an association in TABLE, VALUE replaces
+     the old associated value.
+

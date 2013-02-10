@@ -1,0 +1,4 @@
+This section describes the functions for accessing and storing
+associations in a hash table.  In general, any Lisp object can be used
+as a hash key, unless the comparison method imposes limits.  Any Lisp
+object can also be used as the value.
