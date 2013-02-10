@@ -51,7 +51,7 @@
 
 (ert-deftest ph-vcs-init()
   (mkdir "vcs")
-  (should (ph-vcs-init ph-vcs-def "vcs"))
+  (should (ph-vcs-init "vcs"))
   (should (equal (directory-files "vcs" nil "^\\.git$") (list ".git")))
 
   (tdd-setup-global)
@@ -61,7 +61,7 @@
   (should-not (ph-vcs-detect nil))
   (should-not (ph-vcs-detect ""))
   (should-not (ph-vcs-detect "/"))
-  (should (ph-vcs-detect "a/"))
+  (should (equal 'git (ph-vcs-detect "a/")))
   )
 
 (ert-run-tests-batch-and-exit (car argv))

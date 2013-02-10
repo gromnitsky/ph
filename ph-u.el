@@ -58,22 +58,24 @@ Raise error if DIR isn't a substring of FILE."
 
 
 
-(defun ph-vcs-init (type dir)
+(defun ph-vcs-init (dir &optional type)
   "Create a new TYPE repo and add all files to it from DIR.
 Don't make a commit. Return t on success."
+  (unless type (setq type ph-vcs-def))
+
   ;; FIXME: write it
   (mkdir (concat dir "/.git"))
   t
   )
 
 (defun ph-vcs-detect (dir)
-  "Check for specific files in DIR, return t if found."
+  "Check for specific files in DIR, return a symbol if found."
   (cl-block here
 	(if (not dir) (cl-return-from here nil))
 
 	(cl-loop for idx in ph-vcs-list do
 			 (if (file-directory-p (concat dir "/" (cdr idx)))
-				 (cl-return-from here t)))
+				 (cl-return-from here (car idx))))
 	nil
 	))
 
