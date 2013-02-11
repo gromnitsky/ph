@@ -133,6 +133,16 @@ Return nil on error or list of removed files."
 				  ))
 	))
 
+(defun ph-vl-rm (db)
+  "Remove a ph-vl object from ph-vl list which db is DB.
+Returns t is something was removed, nil otherwise."
+  (cl-block nil
+	(let ((pobj (ph-vl-find db)))
+	  (unless pobj (cl-return nil))
+	  (setq ph-vl (delq pobj ph-vl))	; lisp is boring
+	  t
+	  )))
+
 
 
 (defun ph-db-get (dir)

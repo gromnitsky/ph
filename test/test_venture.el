@@ -125,6 +125,31 @@
 	(ph-vl-reset)
   ))
 
+(ert-deftest ph-vl-rm()
+  (let ((p1 (make-ph-ven :db "/foo/bar/.ph"))
+		(p2 (make-ph-ven :db "/foobar/.ph"))
+		(p3 (make-ph-ven :db "/.ph")))
+
+	(push p1 ph-vl)
+	(push p2 ph-vl)
+	(push p3 ph-vl)
+	(should (= 3 (ph-vl-size)))
+
+	(should-not (ph-vl-rm nil))
+	(should-not (ph-vl-rm "yada"))
+
+	(should (ph-vl-rm "/foo/bar/.ph"))
+	(should (= 2 (ph-vl-size)))
+
+	(should (ph-vl-rm "/.ph"))
+	(should (= 1 (ph-vl-size)))
+
+	(should (ph-vl-rm "/foobar/.ph"))
+	(should (= 0 (ph-vl-size)))
+
+	(ph-vl-reset)
+	))
+
 
 
 (ert-deftest ph-db-find()
@@ -143,5 +168,7 @@
   (should-not (ph-db-find "empty.txt"))
   (should-not (ph-db-find "/root"))
   )
+
+
 
 (ert-run-tests-batch-and-exit (car argv))
