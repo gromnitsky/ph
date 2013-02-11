@@ -1,7 +1,11 @@
-:; exec emacs -Q --script "$0" -- "$@" # -*-emacs-lisp-*-
+:; exec emacs -Q --script "$0" -- "$@" #  -*- lexical-binding: t -*-
 
-(load (expand-file-name "../ph-u.el") nil t)
-(load (expand-file-name "./helper.el") nil t)
+(setq tdd-lib-dir (concat (file-name-directory load-file-name) "/.."))
+(push tdd-lib-dir load-path)
+(push (file-name-directory load-file-name) load-path)
+
+(require 'ph-u)
+(require 'tdd-helper)
 
 
 

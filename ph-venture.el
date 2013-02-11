@@ -1,9 +1,8 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'cl-lib)
-(require 'json)
 
-;(require 'ph-u)
+(require 'ph-u)
 
 (defconst ph-DB-NAME ".ph" "A physicall db file (json)")
 (defvar ph-vl '() "Global list of currently opened projects")

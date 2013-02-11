@@ -7,7 +7,7 @@ ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 
 test:
 	$(MAKE) -C test fixtures
-	@cd test; for idx in test_*; do \
+	@for idx in test/test_*; do \
 		printf '* %s\n' $$idx ; \
 		./$$idx ; \
 		[ $$? -ne 0 ] && exit 1 ; \

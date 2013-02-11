@@ -6,7 +6,7 @@
 
 (setq ph-verbose 0)
 
-(setq tdd-start-dir default-directory)
+(setq tdd-start-dir (file-name-directory load-file-name))
 (setq tdd-work-dir (concat tdd-start-dir "tmp" ))
 (message (format "wd == %s" tdd-work-dir))
 
@@ -41,3 +41,5 @@
 
 ;; setup
 (tdd-setup-global)
+
+(provide 'tdd-helper)
