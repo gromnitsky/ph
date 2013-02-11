@@ -71,6 +71,29 @@
 	(tdd-setup-global)
   ))
 
+(ert-deftest ph-venture-clean()
+  (let (p1 waste)
+	(setq p1 (make-ph-ven :db "/q/w/e/foo/.ph"))
+	(ph-venture-opfl-add p1 "bar/one.txt")
+	(ph-venture-opfl-add p1 "two.txt")
+	(ph-venture-opfl-add p1 "baz/three.txt")
+	(ph-venture-opfl-add p1 "baz/four.txt")
+	(ph-venture-opfl-add p1 "baz/faz/five.txt")
+	(ph-venture-opfl-add p1 "six.txt")
+	(ph-venture-opfl-add p1 "bar/seven.txt")
+
+	(should-not (ph-venture-clean nil "foo"))
+	(should-not (ph-venture-clean nil nil))
+
+	(setq waste (ph-venture-clean p1 "yada"))
+	(should (= 0 (length waste)))
+	(should (= 7 (ph-venture-opfl-size p1)))
+
+	(setq waste (ph-venture-clean p1 "baz"))
+	(should (= 3 (length waste)))
+	(should (= 4 (ph-venture-opfl-size p1)))
+	))
+
 
 
 (ert-deftest ph-vl-find()

@@ -46,20 +46,20 @@
 			 (funcall blk key val))
 		   (ph-ven-opfl pobj)))
 
-(defun ph-venture-new (db)
-  "Create a new ph-ven with DB as db & add it to ph-vl.
+(defun ph-venture-new (file)
+  "Create a new ph-ven with db as FILE & add it to ph-vl.
 Return a pointer to a cell in ph-vl list or nil on error.
 
 Doesn't do any I/O."
   (cl-block nil
-	(if (or (not db) (not (stringp db))) (cl-return nil))
+	(if (or (not file) (not (stringp file))) (cl-return nil))
 
 	(let (cell)
-	  (when (setq cell (ph-vl-find db))
-		(ph-warn 1 (format "project %s is already loaded in emacs" db))
+	  (when (setq cell (ph-vl-find file))
+		(ph-warn 1 (format "project %s is already loaded in emacs" file))
 		(cl-return cell))
 
-	  (car (push (make-ph-ven :db db) ph-vl)))))
+	  (car (push (make-ph-ven :db file) ph-vl)))))
 
 (defun ph-venture-marshalling (pobj)
   "Update POBJ in a marshalled form. Return t on success, nil otherwise.
@@ -93,8 +93,20 @@ WARNING: it rewrites the file every time."
 	  )))
 
 (defun ph-venture-clean (pobj dir)
-  (error "write me")
-  )
+  "Remove from POBJ any files with DIR prefix.
+Return nil on error or list of removed files."
+  (cl-block nil
+	(if (or (not pobj) (not dir)) (cl-return nil))
+
+	(let ((waste '()))
+	  (ph-venture-opfl-each pobj (lambda (key val)
+								   (when (string-prefix-p dir key)
+									 (push key waste)
+								   	 )))
+
+	  (cl-loop for idx in waste do (ph-venture-opfl-rm pobj idx))
+	  waste
+	  )))
 
 
 
