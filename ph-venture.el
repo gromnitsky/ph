@@ -29,6 +29,8 @@
 		name))))
 
 (defun ph-venture-opfl-add (pobj file)
+  (if (equal (substring file 0 1) "/")
+	  (error "%s: only relative paths allowed" file))
   (puthash file (float-time) (ph-ven-opfl pobj)))
 
 (defun ph-venture-opfl-rm (pobj file)
@@ -47,7 +49,7 @@
 		   (ph-ven-opfl pobj)))
 
 (defun ph-venture-new (file)
-  "Create a new ph-ven with db as FILE & add it to ph-vl.
+  "Create a new ph-ven with FILE as db & add it to ph-vl.
 Return a pointer to a cell in ph-vl list or nil on error.
 
 Doesn't do any I/O."
@@ -139,13 +141,22 @@ Return nil on error or list of removed files."
 	  nil
 	(concat (file-name-as-directory dir) ph-DB-NAME)))
 
-(defun ph-db-new (file)
-  (error "write me")
-  )
+(defun ph-db-find (file &optional startDir)
+  "Return a project db file name or nil if FILE doesn't belong to any."
+  (cl-block nil
+	(setq file (ph-chomp file))
 
-(defun ph-db-find (dir)
-  (error "write me")
-  )
+	(unless startDir (setq startDir file))
+	(let ((db (concat startDir "/" ph-DB-NAME)))
+	  (when (and (file-readable-p db) (ph-vcs-detect startDir))
+		(cl-return db))
+
+	  ;; didn't find db file
+	  (if (or (equal "." startDir) (equal "/" startDir)) (cl-return nil))
+
+	  ;; Recursion!
+	  (ph-db-find file (ph-dirname startDir))
+	  )))
 
 
 

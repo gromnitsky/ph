@@ -125,4 +125,23 @@
 	(ph-vl-reset)
   ))
 
+
+
+(ert-deftest ph-db-find()
+  (should-not (ph-db-find nil))
+  (should-not (ph-db-find ""))
+  (should-not (ph-db-find "/DOESN'T EXIST"))
+
+  (should (equal "a/.ph" (ph-db-find "a/b/c/one.txt")))
+  (should (equal "a/.ph" (ph-db-find "a/THIS DOESN'T EXIST/TOO")))
+  (should (equal "a/.ph" (ph-db-find "a")))
+
+  (should-not (ph-db-find "a/b/c/one.txt" ""))
+
+  (should (equal "a/.ph" (ph-db-find "a/b")))
+
+  (should-not (ph-db-find "empty.txt"))
+  (should-not (ph-db-find "/root"))
+  )
+
 (ert-run-tests-batch-and-exit (car argv))
