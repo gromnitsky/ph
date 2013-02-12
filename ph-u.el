@@ -56,6 +56,16 @@ Raise error if DIR isn't a substring of FILE."
 		path)
 	  )))
 
+(defun ph-read-file (file)
+  "Read the contents of a file and return as a string.
+Return nil on error."
+  (cl-block nil
+	(if (or (not file) (not (file-readable-p file))) (cl-return nil))
+
+	(with-temp-buffer
+	  (insert-file-contents file)
+	  (buffer-string))))
+
 
 
 (defun ph-vcs-init (dir &optional type)
