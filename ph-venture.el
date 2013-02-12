@@ -4,7 +4,7 @@
 
 (require 'ph-u)
 
-(defconst ph-DB-NAME ".ph" "A physicall db file (json)")
+(defconst ph-DB-NAME ".ph" "A physicall db file name")
 (defvar ph-vl '() "Global list of currently opened projects")
 
 ;; See doc/structure.org for desc.
@@ -22,7 +22,7 @@
   (cl-block nil
 	(unless (ph-ven-p pobj) (cl-return nil))
 
-	(let ((name (file-name-nondirectory (ph-dirname (ph-ven-db pobj)))))
+	(let ((name (file-name-nondirectory (ph-venture-opfl-prefix pobj))))
 	  (if (equal "" name)
 		  "Root"
 		name))))
@@ -31,6 +31,14 @@
   (if (equal (substring file 0 1) "/")
 	  (error "%s: only relative paths allowed" file))
   (puthash file (float-time) (ph-ven-opfl pobj)))
+
+(defun ph-venture-opfl-prefix (pobj)
+  "Return a prefix useful for reconstructing absolute paths for opfl file names."
+  (ph-dirname (ph-ven-db pobj)))
+
+(defun ph-venture-opfl-absolute (pobj relName)
+  "Return an absolute file name for RELNAME."
+  (concat (ph-venture-opfl-prefix pobj) "/" relName))
 
 (defun ph-venture-opfl-rm (pobj file)
   (remhash file (ph-ven-opfl pobj)))
@@ -80,15 +88,15 @@ WARNING: it rewrites the file every time."
 (defun ph-venture-unmarshalling (file)
   "Return parsed ph-ven object from FILE or nil on error."
   (cl-block nil
-	(unless file (cl-return nil))
-
-	(let (pobj)
+	(let ((raw (ph-read-file file))
+		  pobj)
 	  (condition-case err
-		  (setq pobj
-				(read (with-current-buffer
-						  (find-file-noselect file) (buffer-string))))
+		  (setq pobj (read raw))
 		(error (cl-return nil)))
 	  (unless (ph-ven-p pobj) (cl-return nil))
+
+	  ;; fix db location
+	  (setf (ph-ven-db pobj) (ph-db-get (ph-dirname file)))
 
 	  pobj
 	  )))
@@ -134,7 +142,7 @@ Return nil on error or list of removed files."
 
 (defun ph-vl-rm (db)
   "Remove a ph-vl object from ph-vl list which db is DB.
-Returns t is something was removed, nil otherwise."
+Return t is something was removed, nil otherwise."
   (cl-block nil
 	(let ((pobj (ph-vl-find db)))
 	  (unless pobj (cl-return nil))
