@@ -12,35 +12,51 @@
 (defun ph-kill-buffer-hook()
   )
 
+(defun ph-buffer-pobj-set (pobj)
+  (if (and buffer-file-name (ph-ven-p pobj))
+	  (setq-local ph-buffer-pobj pobj)
+	))
+
+(defun ph-buffer-pobj-unset ()
+  (if buffer-file-name
+	  (ignore-errors
+		(makunbound ph-buffer-pobj))
+	))
+
+;; What it does:
+;;
+;; 0) Parses FILE.
+;;
+;; 1) Adds the project to ph-vl list.
+;;
+;; 2) For each file in a project a) opens it, b) points buffer local
+;; variable to the project object.
 (defun ph-project-open (file)
   "Return a number of opened files or nil on error."
   (interactive "fOpen .ph file: ")
-
   (cl-block nil
 	(if (or (not file) (not (stringp file))) (cl-return nil))
 
 	(let ((openedFiles 0)
-		  cell pobj pfile saveDir)
+		  pobj pfile saveDir cell)
+	  (when (not (setq pobj (ph-venture-unmarshalling file)))
+		(ph-warn 0 (format "cannot parse project %s" file))
+		(cl-return nil))
 	  (when (ph-vl-find file)
 		(ph-warn 1 (format "project %s is already loaded in emacs" file))
 		(cl-return nil))
 
-	  (when (not (setq pobj (ph-venture-unmarshalling file)))
-		(ph-warn 0 (format "cannot parse project %s" file))
-		(cl-return nil))
-
 	  (remove-hook 'find-file-hook 'ph-find-file-hook)
 	  (setq saveDir default-directory)
+	  (setq cell (ph-vl-add pobj))
 	  (ph-venture-opfl-each pobj
 							(lambda (key val)
 							  (setq pfile (ph-venture-opfl-absolute pobj key))
-;							  (print (format "%s %s %s"
-;											 default-directory pfile
-;											 (file-readable-p pfile)))
 							  (if (file-readable-p pfile)
 								  (condition-case err
 									  (progn
 										(find-file pfile)
+										(ph-buffer-pobj-set cell)
 										(cl-incf openedFiles)
 										)
 									(error
@@ -51,7 +67,6 @@
 
 							  (cd saveDir)
 							  ))
-	  (push pobj ph-vl)
 	  (add-hook 'find-file-hook 'ph-find-file-hook)
 	  openedFiles)))
 

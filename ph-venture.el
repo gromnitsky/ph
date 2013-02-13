@@ -63,12 +63,7 @@ Doesn't do any I/O."
   (cl-block nil
 	(if (or (not file) (not (stringp file))) (cl-return nil))
 
-	(let (cell)
-	  (when (setq cell (ph-vl-find file))
-		(ph-warn 1 (format "project %s is already loaded in emacs" file))
-		(cl-return cell))
-
-	  (car (push (make-ph-ven :db file) ph-vl)))))
+	(ph-vl-add (make-ph-ven :db file))))
 
 (defun ph-venture-marshalling (pobj)
   "Update POBJ in a marshalled form. Return t on success, nil otherwise.
@@ -149,6 +144,19 @@ Return t is something was removed, nil otherwise."
 	  (setq ph-vl (delq pobj ph-vl))	; lisp is boring
 	  t
 	  )))
+
+(defun ph-vl-add (pobj)
+  "Add POBJ to ph-vl. Return a pointer to a cell in ph-vl list or nil on error."
+  (cl-block nil
+	(if (or (not (ph-ven-p pobj))) (cl-return nil))
+
+	(let (cell)
+	  (when (setq cell (ph-vl-find (ph-ven-db pobj)))
+		(ph-warn 1 (format "project %s is already loaded in emacs"
+						   (ph-ven-db pobj)))
+		(cl-return cell))
+
+	  (car (push pobj ph-vl)))))
 
 
 
