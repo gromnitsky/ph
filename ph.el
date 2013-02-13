@@ -81,10 +81,11 @@
 	(ph-venture-opfl-each pobj (lambda (key val)
 								 (ignore-errors
 								   (kill-buffer
-									(ph-venture-opfl-absolute pobj key)
+									(get-file-buffer
+									 (ph-venture-opfl-absolute pobj key))
 									))))
 	;; remove project from ph-vl
-	(ph-vl-rm (ph-ven-db db))
+	(ph-vl-rm (ph-ven-db pobj))
 	(add-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	t))
 

@@ -9,7 +9,7 @@
 
 ;; See doc/structure.org for desc.
 (cl-defstruct ph-ven
-  "Phoject Helper object"
+  "Project Helper object"
   db
   (version ph-meta-version)
   (opfl (make-hash-table :test 'equal))

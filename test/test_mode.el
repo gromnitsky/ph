@@ -41,6 +41,47 @@
 	(ph-vl-reset)
 	))
 
+(defun pobj-buffer-list (pobj)
+  (cl-block nil
+	(unless (ph-ven-p pobj) (cl-return nil))
+
+	(let ((buli '())
+		  cell)
+	  (cl-loop for idx in (buffer-list) do
+			   (if (and (buffer-file-name idx)
+						(setq cell (buffer-local-value 'ph-buffer-pobj idx))
+						(eq pobj (ph-vl-find (ph-ven-db cell))))
+				   (push idx buli))
+			   )
+	  buli
+	  )))
+
+(ert-deftest ph-project-close()
+  (ph-vl-reset)
+  (should-not (ph-project-close nil))
+
+  ;; open 2 project
+  (should (ph-project-open "a/.ph"))
+  (should (ph-project-open "b/.ph"))
+  (should (equal 2 (ph-vl-size)))
+  (should (equal 2 (length (pobj-buffer-list (ph-vl-find "a/.ph")))))
+  (should (equal 2 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
+
+  ;; close project a
+  (should (ph-project-close (ph-vl-find "a/.ph")))
+  (should (equal 1 (ph-vl-size)))
+  (should (equal 0 (length (pobj-buffer-list (ph-vl-find "a/.ph")))))
+  (should (equal 2 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
+
+  ;; close project b
+  (should (ph-project-close (ph-vl-find "b/.ph")))
+  (should (equal 0 (ph-vl-size)))
+  (should (equal 0 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
+
+;  (print (buffer-list))
+  (ph-vl-reset)
+  )
+
 
 
 (ert-run-tests-batch-and-exit (car argv))
