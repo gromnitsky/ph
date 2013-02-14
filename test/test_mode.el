@@ -60,7 +60,7 @@
   (ph-vl-reset)
   (should-not (ph-project-close nil))
 
-  ;; open 2 project
+  ;; open 2 projects
   (should (ph-project-open "a/.ph"))
   (should (ph-project-open "b/.ph"))
   (should (equal 2 (ph-vl-size)))
@@ -81,6 +81,19 @@
 ;  (print (buffer-list))
   (ph-vl-reset)
   )
+
+(ert-deftest ph-project-new_simple()
+  (ph-vl-reset)
+  (should-not (ph-project-new nil))
+  (should-error (ph-project-new "a"))	; project already exists
+
+  (let (db1)
+	(should (setq db1 (ph-project-new "project-new_simple/2/3")))
+	(should (file-exists-p db1))
+	(should (equal 1 (ph-vl-size)))
+
+	(tdd-setup-global)
+	))
 
 
 

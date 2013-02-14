@@ -172,6 +172,24 @@
   (should-not (ph-db-find "/root"))
   )
 
+(ert-deftest ph-db-find-subproject()
+  (should-not (ph-db-find-subproject nil))
+  (should-not (ph-db-find-subproject ""))
+  (should-not (ph-db-find-subproject "/DOESN'T EXIST"))
+
+  (should (equal "a/.ph" (ph-db-find-subproject "a/b/c/")))
+  (should (equal "a/.ph" (ph-db-find-subproject "a/b")))
+  (should-not (ph-db-find-subproject "a/"))
+  (should-not (ph-db-find-subproject "a"))
+
+  (cd "a")
+  (should-not (ph-db-find-subproject "./"))
+  (should (equal "./.ph" (ph-db-find-subproject "b/c")))
+  (should (equal "./.ph" (ph-db-find-subproject "b/")))
+
+  (cd tdd-work-dir)
+  )
+
 
 
 (ert-run-tests-batch-and-exit (car argv))

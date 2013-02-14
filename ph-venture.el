@@ -56,7 +56,7 @@
 		   (ph-ven-opfl pobj)))
 
 (defun ph-venture-new (file)
-  "Create a new ph-ven with FILE as db & add it to ph-vl.
+  "Create a new ph-ven with FILE as db & add it to ph-vl list.
 Return a pointer to a cell in ph-vl list or nil on error.
 
 Doesn't do any I/O."
@@ -146,7 +146,8 @@ Return t is something was removed, nil otherwise."
 	  )))
 
 (defun ph-vl-add (pobj)
-  "Add POBJ to ph-vl. Return a pointer to a cell in ph-vl list or nil on error."
+  "Add POBJ to ph-vl list.
+Return a pointer to a cell in ph-vl list or nil on error."
   (cl-block nil
 	(if (or (not (ph-ven-p pobj))) (cl-return nil))
 
@@ -182,6 +183,18 @@ Return t is something was removed, nil otherwise."
 	  ;; Recursion!
 	  (ph-db-find file (ph-dirname startDir))
 	  )))
+
+(defun ph-db-find-subproject (dir)
+  "Return a subproject db file or nil if DIR doesn't belong to any.
+If DIR is a file, detection will not work."
+  (cl-block nil
+	(let (spdb)
+	  (unless dir (cl-return nil))
+	  (if (and (setq spdb (ph-db-find (ph-dirname dir)))
+			   (not (equal (expand-file-name dir) default-directory)))
+		  spdb
+		nil)
+	)))
 
 
 
