@@ -73,13 +73,20 @@
   (should (equal 0 (length (pobj-buffer-list (ph-vl-find "a/.ph")))))
   (should (equal 2 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
 
+  ;; modify files in project b
+  ;; FIXME: emacs doesn't react on this
+  (cl-loop for idx in (pobj-buffer-list (ph-vl-find "b/.ph")) do
+		   (set-buffer idx)
+		   (set-buffer-modified-p t)
+		   )
+
   ;; close project b
   (should (ph-project-close (ph-vl-find "b/.ph")))
   (should (equal 0 (ph-vl-size)))
   (should (equal 0 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
 
 ;  (print (buffer-list))
-  (ph-vl-reset)
+  (tdd-setup-global)
   )
 
 (ert-deftest ph-project-new_simple()
@@ -132,9 +139,9 @@
   )
 
 (ert-deftest ph-project-new_subproject_fail()
-  (setq tdd-y-or-n nil)
-  (should-not (ph-project-new "level-1/level-2"))
-  (setq tdd-y-or-n t)
+  (let ((tdd-y-or-n nil))
+	(should-not (ph-project-new "level-1/level-2"))
+	)
 
   (chmod "level-1/.ph" #o400)
   ;; permission denied updating project in level-1

@@ -1,14 +1,13 @@
 -*-org-*-
 
-* TODO 0.0.1 [1/10]
+* TODO 0.0.1 [3/10]
 
 - [ ] show ' ph' in modeline for 'tracked' files only
 - [X] ph-project-new
-- [ ] ph-project-open
-  - [ ] unwind-protect
-- [ ] ph-project-close
-  - [ ] unwind-protect
-  - [ ] don't check if modified?
+- [X] ph-project-open
+  - [X] unwind-protect
+- [X] ph-project-close
+  - [X] unwind-protect
 - [ ] ph-project-which
 - [ ] ph-project-view
 - [ ] ph-list

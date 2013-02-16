@@ -65,49 +65,66 @@ Return nil on error."
 		(ph-warn 1 (format "project %s is already loaded in emacs" file))
 		(cl-return nil))
 
-	  (remove-hook 'find-file-hook 'ph-find-file-hook)
 	  (setq saveDir default-directory)
 	  (setq cell (ph-vl-add pobj))
-	  (ph-venture-opfl-each pobj
-							(lambda (key val)
-							  (setq pfile (ph-venture-opfl-absolute pobj key))
-							  (if (file-readable-p pfile)
-								  (condition-case err
-									  (progn
-										(find-file pfile)
-										(ph-buffer-pobj-set cell)
-										(cl-incf openedFiles)
-										)
-									(error
-									 (ph-venture-opfl-rm pobj key)
-									 (ph-warn 0 "find-file failed: %s"
-											  (error-message-string err))))
-								(ph-venture-opfl-rm pobj key))
+	  (remove-hook 'find-file-hook 'ph-find-file-hook)
+	  (unwind-protect
+		  (ph-venture-opfl-each pobj
+								(lambda (key val)
+								  (setq pfile (ph-venture-opfl-absolute pobj key))
+								  (if (file-readable-p pfile)
+									  (condition-case err
+										  (progn
+											(find-file pfile)
+											(ph-buffer-pobj-set cell)
+											(cl-incf openedFiles)
+											)
+										(error
+										 (ph-venture-opfl-rm pobj key)
+										 (ph-warn 0 "find-file failed: %s"
+												  (error-message-string err))))
+									(ph-venture-opfl-rm pobj key))
 
-							  (cd saveDir)
-							  ))
-	  (add-hook 'find-file-hook 'ph-find-file-hook)
+								  (cd saveDir)))
+		;; always restore the hook
+		(add-hook 'find-file-hook 'ph-find-file-hook))
+
 	  openedFiles)))
 
-(defun ph-project-close (pobj)
+(defun ph-project-close (&optional pobj)
   "Close all currently opened project files. Return t on success."
+  (interactive)
   (cl-block nil
-	(unless (ph-ven-p pobj) (cl-return nil))
+	(unless (ph-ven-p pobj)
+	  (progn
+		;; try to get pobj from current buffer
+		(if (and (local-variable-p 'ph-buffer-pobj)
+				 (ph-ven-p ph-buffer-pobj))
+			(setq pobj ph-buffer-pobj)
+		  (progn
+			(ph-warn 0 (format "%s doesn't belong to any project"
+							   (current-buffer)))
+			(cl-return nil)))
+		))
 
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
-	;; kill buffers in usual emacs fashion
-	(ph-venture-opfl-each pobj (lambda (key val)
-								 (let (bufname)
-								   (ignore-errors
-									 (setq bufname
-									  (get-file-buffer
-									   (ph-venture-opfl-absolute pobj key)))
+	;; kill buffers in usual emacs fashion, some buffers may be unsaved
+	;; & user can press C-g thus killing only a subset of buffers
+	(unwind-protect
+		(ph-venture-opfl-each pobj (lambda (key val)
+									 (let (bufname)
+									   (ignore-errors
+										 (setq bufname
+											   (get-file-buffer
+												(ph-venture-opfl-absolute pobj key)))
 
-									 (if bufname (kill-buffer bufname))
-									 ))))
-	;; remove project from ph-vl
+										 (if bufname (kill-buffer bufname))
+										 ))))
+	  ;; always restore the hook
+	  (add-hook 'kill-buffer-hook 'ph-kill-buffer-hook))
+
+	;; remove project from ph-vl if user didn't hit C-g
 	(ph-vl-rm (ph-ven-db pobj))
-	(add-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	t))
 
 (defun ph-project-new (dir)
