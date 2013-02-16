@@ -26,6 +26,7 @@
 (defun ph-project-parse (file)
   "Load a project form FILE as db and return the project object.
 If the project already loaded, just return a pointer to ph-vl list.
+Doesn't load any opfl files.
 
 Return nil on error."
   (cl-block nil
@@ -38,7 +39,7 @@ Return nil on error."
 		(ph-warn 0 (format "cannot parse project %s" file))
 		(cl-return nil))
 
-	  (ph-vl-add (pobj))
+	  (ph-vl-add pobj)
 	  )))
 
 ;; What it does:
@@ -80,7 +81,7 @@ Return nil on error."
 									(error
 									 (ph-venture-opfl-rm pobj key)
 									 (ph-warn 0 "find-file failed: %s"
-											  (cadr err))))
+											  (error-message-string err))))
 								(ph-venture-opfl-rm pobj key))
 
 							  (cd saveDir)
@@ -91,16 +92,19 @@ Return nil on error."
 (defun ph-project-close (pobj)
   "Close all currently opened project files. Return t on success."
   (cl-block nil
-	(unless pobj (cl-return nil))
+	(unless (ph-ven-p pobj) (cl-return nil))
 
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	;; kill buffers in usual emacs fashion
 	(ph-venture-opfl-each pobj (lambda (key val)
-								 (ignore-errors
-								   (kill-buffer
-									(get-file-buffer
-									 (ph-venture-opfl-absolute pobj key))
-									))))
+								 (let (bufname)
+								   (ignore-errors
+									 (setq bufname
+									  (get-file-buffer
+									   (ph-venture-opfl-absolute pobj key)))
+
+									 (if bufname (kill-buffer bufname))
+									 ))))
 	;; remove project from ph-vl
 	(ph-vl-rm (ph-ven-db pobj))
 	(add-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
@@ -114,26 +118,30 @@ project & clean its db from subproject files."
   (cl-block nil
 	(if (not dir) (cl-return nil))
 	(let ((db (ph-db-get dir))
-		  pobj spDb spObj)
+		  parDb parObj)
 	  (if (file-exists-p db)
 		  (error "There is already a project in %s" dir))
 
-	  (when (setq spDb (ph-db-find-subproject dir))
+	  (when (setq parDb (ph-db-find-subproject dir))
 		  (if (not (y-or-n-p (format "Directory %s is alredy under project %s. \
-Make a sub-project?" dir spDb)))
+Make a sub-project?" dir parDb)))
 			  (cl-return nil)
 			;; Close a sub project & fix its db.  Of cource it's better
 			;; to "transfer" opfl subproject's files to a new project
 			;; in real time, but that's too much work & emacs is an old fart.
-			(setq spObj (ph-project-parse spDb))
-			(ph-project-close spObj)
-			(ph-venture-clean spObj (ph-file-relative dir spDb))
-			(ph-venture-marshalling spObj)))
-
+			(when (not (setq parObj (ph-project-parse parDb)))
+			  (error "Parsing sub-project %s failed. \
+New project was NOT created" parDb))
+			(ph-project-close parObj)
+			(ph-venture-clean parObj (ph-file-relative dir (ph-dirname parDb)))
+			(when (not (ph-venture-marshalling parObj))
+			  (error "Updating sub-project %s failed. \
+New project was NOT created" parDb))
+			))
 	  (if (not (file-directory-p dir)) (mkdir dir t))
 
-	  (unless (or (ph-venture-marshalling (ph-venture-new db))
-				  (ph-vcs-init db))
+	  (unless (and (ph-venture-marshalling (ph-venture-new db))
+				   (ph-vcs-init dir))
 		(error "Cannot create project in %s" dir))
 
 	  db

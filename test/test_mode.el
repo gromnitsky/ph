@@ -95,6 +95,61 @@
 	(tdd-setup-global)
 	))
 
+(defun y-or-n-p(prompt)
+  tdd-y-or-n)
+
+(ert-deftest ph-project-new_subproject()
+  (ph-vl-reset)
+
+  ;; open 1st project
+  (should (= 4 (ph-project-open "level-1/.ph")))
+  (should (equal 1 (ph-vl-size)))
+
+  (let (db2)
+	;; create a subproject
+	(should (setq db2 (ph-project-new "level-1/level-2")))
+	(should (equal 1 (ph-vl-size)))
+	(should (ph-vl-find db2))
+
+	;; 1st project is closed due to subproject; reopen it
+	(should (= 2 (ph-project-open "level-1/.ph")))
+	(should (equal 2 (ph-vl-size)))
+
+	(tdd-setup-global)
+	))
+
+(ert-deftest ph-project-new_subproject_2()
+  (ph-vl-reset)
+
+  ;; create a project
+  (should (ph-project-new "."))
+
+  ;; create a subproject
+  (delete-file "level-1/.ph")
+  (should (ph-project-new "level-1"))
+
+  (tdd-setup-global)
+  )
+
+(ert-deftest ph-project-new_subproject_fail()
+;  (setq tdd-y-or-n nil)
+;  (should-not (ph-project-new "level-1/level-2"))
+;  (setq tdd-y-or-n t)
+
+  (chmod "level-1/.ph" #o400)
+  ;; permission denied updating project in level-1
+  (should-error (ph-project-new "level-1/level-2"))
+  (should-error (ph-project-new "level-1/level-2"))
+
+  (chmod "level-1/.ph" #o644)
+  (with-temp-file "level-1/.ph" (insert "bwaa!"))
+  ;; level-1 project parsing error
+  (should-error (ph-project-new "level-1/level-2"))
+
+  (tdd-setup-global)
+  )
+
+
 
 
 (ert-run-tests-batch-and-exit (car argv))

@@ -44,7 +44,7 @@ Raise error if DIR isn't a substring of FILE."
 
 	(setq file (ph-chomp file))
 	(setq dir (ph-chomp dir))
-	(if (equal "" dir) (cl-return file))
+	(if (or (equal "" dir) (equal "." dir)) (cl-return file))
 
 	(unless (string-prefix-p dir file)
 	  (error "%s must be a prefix of %s" dir file))
@@ -74,7 +74,8 @@ Don't make a commit. Return t on success."
   (unless type (setq type ph-vcs-def))
 
   ;; FIXME: write it
-  (mkdir (concat dir "/.git"))
+  (ignore-errors
+	(mkdir (concat dir "/.git")))
   t
   )
 
