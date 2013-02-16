@@ -1,0 +1,23 @@
+-*-org-*-
+
+* TODO 0.0.1 [1/10]
+
+- [ ] show ' ph' in modeline for 'tracked' files only
+- [X] ph-project-new
+- [ ] ph-project-open
+  - [ ] unwind-protect
+- [ ] ph-project-close
+  - [ ] unwind-protect
+  - [ ] don't check if modified?
+- [ ] ph-project-which
+- [ ] ph-project-view
+- [ ] ph-list
+- [ ] menu
+- [ ] ph-find-file-hook
+- [ ] ph-kill-buffer-hook
+
+* TODO 0.1.x [0/3]
+
+- [ ] ido support for opfl
+- [ ] git grep
+- [ ] ph-project-find-file

@@ -132,9 +132,9 @@
   )
 
 (ert-deftest ph-project-new_subproject_fail()
-;  (setq tdd-y-or-n nil)
-;  (should-not (ph-project-new "level-1/level-2"))
-;  (setq tdd-y-or-n t)
+  (setq tdd-y-or-n nil)
+  (should-not (ph-project-new "level-1/level-2"))
+  (setq tdd-y-or-n t)
 
   (chmod "level-1/.ph" #o400)
   ;; permission denied updating project in level-1

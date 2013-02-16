@@ -4,16 +4,16 @@ Emacs Project Helper
 
 ** Project
 
-From a user standpoint it's a directory that has .epr file in it + git
+From a user standpoint it's a directory that has .ph file in it + git
 repo. Every other file in the directory belongs to the project. User may
-think that git repo is a project & .epr file is just a file that emacs
+think that git repo is a project & .ph file is just a file that emacs
 need to keep track of project files in emacs.
 
 ** Project name
 
 A directory with project files. For example, if /foo/bar contains a git
-repo + .epr file then project name is 'bar'. If / directory
-contains .erp + git repo, then project name is 'Root'.
+repo + .ph file then project name is 'bar'. If / directory
+contains .ph + git repo, then project name is 'Root'.
 
 ** Subproject
 
@@ -26,32 +26,32 @@ projects. (Symlinks? FIXME)
 
 ** Project
 
-Object that represent project in the memory ('ven' from venture):
+Object that rphesent project in the memory ('ven' from venture):
 
-(cl-defstruct epr-ven
+(cl-defstruct ph-ven
   db
   version
   opfl
 )
 
-Its serialised version is a json file '.epr'. epr-ven contains its path
+Its serialised version is a json file '.ph'. ph-ven contains its path
 (db). opfl is a hash of currently opened project files in emacs. When
-user load the project, EPR tries to open all files mentioned in the
-hash. If user kills a buffer with one of project files, EPR deletes its
+user load the project, PH tries to open all files mentioned in the
+hash. If user kills a buffer with one of project files, PH deletes its
 name form opfl.
 
-db is always a full path to the .erp file. opfl contains only relative
+db is always a full path to the .ph file. opfl contains only relative
 paths to the parent dir (this is done for easily moving the project
 directory).
 
 ** Global list
 
-epr-vl is a list of epr-ven cells and means currently opened projects in
+ph-vl is a list of ph-ven cells and means currently opened projects in
 emacs. It's updated only if user opens/closes file that belongs to some
 project.
 
 ** Project actions
 
-All edits to project is done only thought erp-venture-* functions. Its
+All edits to project is done only thought ph-venture-* functions. Its
 prohibited to parse or modify underline json file or corresponding cell
-in epr-vl list.
+in ph-vl list.
