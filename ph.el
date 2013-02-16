@@ -23,6 +23,29 @@
 		(makunbound ph-buffer-pobj))
 	))
 
+(defun ph-buffer-current-pobj-get ()
+  "Return pobj for current buffer or nil."
+  (if (and (local-variable-p 'ph-buffer-pobj) (ph-ven-p ph-buffer-pobj))
+	  ph-buffer-pobj))
+
+(defun ph-project-which ()
+  "Print a path to a project db for current buffer.
+Return pobj db or nil on error."
+  (interactive)
+  (cl-block nil
+	(let ((pobj (ph-buffer-current-pobj-get)))
+	  (unless (ph-ven-p pobj)
+		(progn
+		  (ph-warn 0 (format "%s doesn't belong to any opened project"
+							 (current-buffer)))
+		  (cl-return nil)))
+
+	  (ph-warn 0 (format "%s" (ph-ven-db pobj)))
+	  (ph-ven-db pobj)
+	  )))
+
+
+
 (defun ph-project-parse (file)
   "Load a project form FILE as db and return the project object.
 If the project already loaded, just return a pointer to ph-vl list.
@@ -56,7 +79,7 @@ Return nil on error."
   (cl-block nil
 	(if (or (not file) (not (stringp file))) (cl-return nil))
 
-	(let ((openedFiles 0)
+	(let ((openedFiles 0) (wasFiles 0)
 		  pobj pfile saveDir cell)
 	  (when (not (setq pobj (ph-venture-unmarshalling file)))
 		(ph-warn 0 (format "cannot parse project %s" file))
@@ -65,6 +88,7 @@ Return nil on error."
 		(ph-warn 1 (format "project %s is already loaded in emacs" file))
 		(cl-return nil))
 
+	  (setq wasFiles (ph-venture-opfl-size pobj))
 	  (setq saveDir default-directory)
 	  (setq cell (ph-vl-add pobj))
 	  (remove-hook 'find-file-hook 'ph-find-file-hook)
@@ -89,6 +113,10 @@ Return nil on error."
 		;; always restore the hook
 		(add-hook 'find-file-hook 'ph-find-file-hook))
 
+	  ;; sync db with memory objects
+	  (if (/= openedFiles wasFiles)
+		  (ph-venture-marshalling pobj))
+
 	  openedFiles)))
 
 (defun ph-project-close (&optional pobj)
@@ -96,16 +124,8 @@ Return nil on error."
   (interactive)
   (cl-block nil
 	(unless (ph-ven-p pobj)
-	  (progn
-		;; try to get pobj from current buffer
-		(if (and (local-variable-p 'ph-buffer-pobj)
-				 (ph-ven-p ph-buffer-pobj))
-			(setq pobj ph-buffer-pobj)
-		  (progn
-			(ph-warn 0 (format "%s doesn't belong to any project"
-							   (current-buffer)))
-			(cl-return nil)))
-		))
+	  (when (not (setq pobj (ph-buffer-current-pobj-get)))
+		(cl-return nil)))
 
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	;; kill buffers in usual emacs fashion, some buffers may be unsaved
@@ -163,6 +183,7 @@ New project was NOT created" parDb))
 
 	  db
 	  )))
+
 
 
 

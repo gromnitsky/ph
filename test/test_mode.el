@@ -17,11 +17,15 @@
   (should-not (ph-project-open nil))
   (should-not (ph-project-open "/DOESN'T EXIST"))
 
-  (let (openedFiles)
+  (let (openedFiles pobj)
 	;; a
 	(setq openedFiles (ph-project-open "a/.ph"))
 	(should (equal 2 openedFiles))
 	(should (equal 1 (ph-vl-size)))
+
+	;; check that db was physically updated
+	(setq pobj (read (ph-read-file "a/.ph")))
+	(should (equal 2 (ph-venture-opfl-size pobj)))
 
 	;; open a again
 	(setq openedFiles (ph-project-open "a/.ph"))
@@ -38,7 +42,10 @@
 	(should-not openedFiles)
 	(should (equal 2 (ph-vl-size)))
 
-	(ph-vl-reset)
+	;; cleanup
+	(ph-project-close (ph-vl-find "a/.ph"))
+	(ph-project-close (ph-vl-find "b/.ph"))
+	(tdd-setup-global)
 	))
 
 (defun pobj-buffer-list (pobj)
@@ -72,13 +79,6 @@
   (should (equal 1 (ph-vl-size)))
   (should (equal 0 (length (pobj-buffer-list (ph-vl-find "a/.ph")))))
   (should (equal 2 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
-
-  ;; modify files in project b
-  ;; FIXME: emacs doesn't react on this
-  (cl-loop for idx in (pobj-buffer-list (ph-vl-find "b/.ph")) do
-		   (set-buffer idx)
-		   (set-buffer-modified-p t)
-		   )
 
   ;; close project b
   (should (ph-project-close (ph-vl-find "b/.ph")))
@@ -156,6 +156,24 @@
   (tdd-setup-global)
   )
 
+(ert-deftest ph-buffer-current-pobj-get()
+  (should-not (ph-buffer-current-pobj-get))
+  (ph-project-open "a/.ph")
+  (should (equal "a/.ph" (ph-ven-db (ph-buffer-current-pobj-get))))
+
+  (ph-project-close "a/.ph")
+  (tdd-setup-global)
+  )
+
+(ert-deftest ph-project-which()
+  (should-not (ph-project-which))
+
+  (ph-project-open "a/.ph")
+  (should (equal "a/.ph" (ph-project-which)))
+
+  (ph-project-close "a/.ph")
+  (tdd-setup-global)
+  )
 
 
 
