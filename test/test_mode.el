@@ -48,20 +48,34 @@
 	(tdd-setup-global)
 	))
 
-(defun pobj-buffer-list (pobj)
-  (cl-block nil
-	(unless (ph-ven-p pobj) (cl-return nil))
+(ert-deftest ph-buffer-list()
+  (should-not (ph-buffer-list nil))
 
-	(let ((buli '())
-		  cell)
-	  (cl-loop for idx in (buffer-list) do
-			   (if (and (buffer-file-name idx)
-						(setq cell (buffer-local-value 'ph-buffer-pobj idx))
-						(eq pobj (ph-vl-find (ph-ven-db cell))))
-				   (push idx buli))
-			   )
-	  buli
-	  )))
+  (let (bf-a bf-b bf-c)
+	(ph-project-open "a/.ph")
+	(ph-project-open "b/.ph")
+	(ph-project-open "level-1/.ph")
+
+	(should (setq bf-a (ph-buffer-list (ph-vl-find "a/.ph"))))
+	(should (setq bf-b (ph-buffer-list (ph-vl-find "b/.ph"))))
+	(should (setq bf-c (ph-buffer-list (ph-vl-find "level-1/.ph"))))
+
+	(should (equal 2 (length bf-a)))
+	(should (equal 2 (length bf-b)))
+	(should (equal 4 (length bf-c)))
+
+	(ph-project-new "1/2/3/.ph")
+	(should-not (ph-buffer-list (ph-vl-find "1/2/3/.ph")))
+
+	(should (equal 2 (length bf-a)))
+
+	;; cleanup
+	(ph-project-close (ph-vl-find "a/.ph"))
+	(ph-project-close (ph-vl-find "b/.ph"))
+	(ph-project-close (ph-vl-find "level-1/.ph"))
+	(ph-project-close (ph-vl-find "1/2/3/.ph"))
+	(tdd-setup-global)
+	))
 
 (ert-deftest ph-project-close()
   (ph-vl-reset)
@@ -71,19 +85,19 @@
   (should (ph-project-open "a/.ph"))
   (should (ph-project-open "b/.ph"))
   (should (equal 2 (ph-vl-size)))
-  (should (equal 2 (length (pobj-buffer-list (ph-vl-find "a/.ph")))))
-  (should (equal 2 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
+  (should (equal 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+  (should (equal 2 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
 
   ;; close project a
   (should (ph-project-close (ph-vl-find "a/.ph")))
   (should (equal 1 (ph-vl-size)))
-  (should (equal 0 (length (pobj-buffer-list (ph-vl-find "a/.ph")))))
-  (should (equal 2 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
+  (should (equal 0 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+  (should (equal 2 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
 
   ;; close project b
   (should (ph-project-close (ph-vl-find "b/.ph")))
   (should (equal 0 (ph-vl-size)))
-  (should (equal 0 (length (pobj-buffer-list (ph-vl-find "b/.ph")))))
+  (should (equal 0 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
 
 ;  (print (buffer-list))
   (tdd-setup-global)
@@ -174,6 +188,29 @@
   (ph-project-close "a/.ph")
   (tdd-setup-global)
   )
+
+;; monkey patch
+(defun ido-completing-read (prompt
+							choices
+							&optional predicate require-match
+							initial-input hist def inherit-input-method)
+  (car (last choices)))
+
+(ert-deftest ph-project-switch-buffer()
+  (should-error (ph-project-switch-buffer nil))
+  (should-error (ph-project-switch-buffer))
+
+  (let (lst)
+	(ph-project-open "level-1/.ph")
+
+	;; last list element must be 1st after ph-project-switch-buffer
+	(setq lst (car (last (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+	(should (ph-project-switch-buffer))
+	(should (equal lst (car (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+	(ph-project-close "level-1/.ph")
+	(tdd-setup-global)
+	))
 
 
 

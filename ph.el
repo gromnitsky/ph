@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'cl-lib)
+(require 'ido)
 
 (require 'ph-venture)
 
@@ -23,10 +24,30 @@
 		(makunbound ph-buffer-pobj))
 	))
 
-(defun ph-buffer-current-pobj-get ()
-  "Return pobj for current buffer or nil."
+(defun ph-buffer-current-pobj-get (&optional warnUser)
+  "Return pobj for current buffer or nil.
+Show a warning if WARNUSER is t & pobj is nil."
   (if (and (local-variable-p 'ph-buffer-pobj) (ph-ven-p ph-buffer-pobj))
-	  ph-buffer-pobj))
+	  ph-buffer-pobj
+	(when warnUser
+	  (ph-warn 0 (format "%s doesn't belong to any opened project"
+						 (current-buffer))))
+	nil))
+
+(defun ph-buffer-list (pobj)
+  "Iterate through buffer-list & return only POBJ buffers."
+  (cl-block nil
+	(let ((flist '()) cell)
+	  (unless (ph-ven-p pobj) (cl-return flist))
+
+	  (dolist (idx (buffer-list))
+		(if (and (buffer-file-name idx)
+				 (setq cell (buffer-local-value 'ph-buffer-pobj idx))
+				 (eq pobj cell))
+			(setq flist (append flist (list idx)))))
+	  flist)))
+
+
 
 (defun ph-project-which ()
   "Print a path to a project db for current buffer.
@@ -43,8 +64,6 @@ Return pobj db or nil on error."
 	  (ph-warn 0 (format "%s" (ph-ven-db pobj)))
 	  (ph-ven-db pobj)
 	  )))
-
-
 
 (defun ph-project-parse (file)
   "Load a project form FILE as db and return the project object.
@@ -124,7 +143,7 @@ Return nil on error."
   (interactive)
   (cl-block nil
 	(unless (ph-ven-p pobj)
-	  (when (not (setq pobj (ph-buffer-current-pobj-get)))
+	  (when (not (setq pobj (ph-buffer-current-pobj-get t)))
 		(cl-return nil)))
 
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
@@ -183,6 +202,29 @@ New project was NOT created" parDb))
 
 	  db
 	  )))
+
+(defun ph-project-switch-buffer (&optional pobj)
+  "Like ido-swithc-buffer but only for a specific POBJ.
+Return a buffer name if switch was done."
+  (interactive)
+  (if (and (not (ph-ven-p pobj))
+		   (not (setq pobj (ph-buffer-current-pobj-get t))))
+	  (error "%s doesn't belong to any opened project" (current-buffer)))
+
+  (let ((flist '())
+		bf buf)
+	(if (not (setq bf (ph-buffer-list pobj)))
+		(error "Project %s doesn't have opened files yet" (ph-ven-db pobj)))
+
+	;; create a list of POBJ emacs buffer names (not file names)
+	(dolist (idx bf)
+	  (setq flist (append flist (list (buffer-name idx))))) ; elisp is boring
+
+	(when (setq buf (ido-completing-read "ph: " flist))
+	  (switch-to-buffer buf))
+
+	buf
+	))
 
 
 

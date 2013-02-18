@@ -55,6 +55,13 @@
 			 (funcall blk key val))
 		   (ph-ven-opfl pobj)))
 
+(defun ph-venture-opfl-as-list (pobj)
+  (let ((flist '()))
+	(ph-venture-opfl-each pobj (lambda (key val)
+								 (push key flist)))
+	flist
+	))
+
 (defun ph-venture-new (file)
   "Create a new ph-ven with FILE as db & add it to ph-vl list.
 Return a pointer to a cell in ph-vl list or nil on error.
