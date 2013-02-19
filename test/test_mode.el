@@ -230,6 +230,36 @@
   (tdd-setup-global)
   )
 
+(ert-deftest ph-find-file-hook()
+  (ph-mode t)
+
+  (find-file "empty.txt")
+  (should (equal 0 (ph-vl-size)))
+
+  (find-file "a/b/c/memory")
+  (should (equal 0 (ph-vl-size)))
+
+  (cd tdd-work-dir)
+  (should (equal 2 (ph-project-open "a/.ph")))
+  (should (equal 1 (ph-vl-size)))
+  (should (equal 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+	;; record another file
+  (find-file "a/b/c/one.txt")
+  (cd tdd-work-dir)
+  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+  ;; parse raw db
+  (should (equal 3 (ph-venture-opfl-size (ph-venture-unmarshalling "a/.ph"))))
+
+  (find-file "/root/boots.txt")
+  (cd tdd-work-dir)
+  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+  (ph-project-close (ph-vl-find "a/.ph"))
+  (tdd-setup-global)
+  )
+
 
 
 (ert-run-tests-batch-and-exit (car argv))

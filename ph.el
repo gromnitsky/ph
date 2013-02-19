@@ -15,15 +15,11 @@
 
 	  (when (setq pobj (ph-vl-find db))
 		(setq file (ph-file-relative buffer-file-name (ph-dirname db)))
-		(print (format "%s %s" file buffer-file-name))
 
-		;; update db only if current file not it it
-		(when (not (ph-venture-opfl-get pobj file))
-		  (print (format "updating with %s" file))
-		  (ph-buffer-pobj-set pobj)
-		  (ph-venture-opfl-add pobj file)
-		  (ph-venture-marshalling pobj))
-		))))
+		(ph-buffer-pobj-set pobj)
+		(ph-venture-opfl-add pobj file)
+		(ph-venture-marshalling pobj))
+	  )))
 
 (defun ph-kill-buffer-hook()
   )
