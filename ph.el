@@ -10,9 +10,20 @@
 (defun ph-find-file-hook()
   (cl-block nil
 	(if (not buffer-file-name) (cl-return))
-	(print (format "HERE %s %s" buffer-file-name major-mode))
-	)
-  )
+	(let (db pobj file)
+	  (unless (setq db (ph-db-find buffer-file-name)) (cl-return nil))
+
+	  (when (setq pobj (ph-vl-find db))
+		(setq file (ph-file-relative buffer-file-name (ph-dirname db)))
+		(print (format "%s %s" file buffer-file-name))
+
+		;; update db only if current file not it it
+		(when (not (ph-venture-opfl-get pobj file))
+		  (print (format "updating with %s" file))
+		  (ph-buffer-pobj-set pobj)
+		  (ph-venture-opfl-add pobj file)
+		  (ph-venture-marshalling pobj))
+		))))
 
 (defun ph-kill-buffer-hook()
   )
@@ -23,10 +34,8 @@
 	))
 
 (defun ph-buffer-pobj-unset ()
-  (if buffer-file-name
-	  (ignore-errors
-		(makunbound ph-buffer-pobj))
-	))
+  (ignore-errors
+	(makunbound ph-buffer-pobj)))
 
 (defun ph-buffer-current-pobj-get (&optional warnUser)
   "Return pobj for current buffer or nil.
@@ -89,14 +98,10 @@ Return nil on error."
 	  (ph-vl-add pobj)
 	  )))
 
-;; What it does:
-;;
 ;; 0) Parses FILE.
-;;
 ;; 1) Adds the project to ph-vl list.
-;;
 ;; 2) For each file in a project a) opens it, b) points buffer local
-;; variable to the project object.
+;;    variable to the project object.
 (defun ph-project-open (file)
   "Return a number of opened files or nil on error."
   (interactive "fOpen .ph file: ")

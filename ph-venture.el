@@ -104,7 +104,7 @@ Doesn't do any I/O."
   (cl-block nil
 	(if (or (not file) (not (stringp file))) (cl-return nil))
 
-	(ph-vl-add (make-ph-ven :db file))))
+	(ph-vl-add (make-ph-ven :db (expand-file-name file)))))
 
 (defun ph-venture-marshalling (pobj)
   "Update POBJ in a marshalled form. Return t on success, nil otherwise.
@@ -131,8 +131,8 @@ WARNING: it rewrites the file every time."
 		(error (cl-return nil)))
 	  (unless (ph-ven-p pobj) (cl-return nil))
 
-	  ;; fix db location
-	  (setf (ph-ven-db pobj) (ph-db-get (ph-dirname file)))
+	  ;; fix db location to current absolute value
+	  (setf (ph-ven-db pobj) (ph-db-get (ph-dirname (expand-file-name file))))
 
 	  pobj
 	  )))
@@ -175,6 +175,7 @@ Return nil on error or list of removed files."
   "Return a pointer to some ph-vl object or nil."
   (cl-block nil
 	(unless db (cl-return nil))
+	(setq db (expand-file-name db))
 	(ph-vl-each (lambda (pobj)
 				  (if (equal db (ph-ven-db pobj)) (cl-return pobj))
 				  ))

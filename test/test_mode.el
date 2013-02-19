@@ -43,9 +43,10 @@
 (ert-deftest ph-buffer-current-pobj-get()
   (should-not (ph-buffer-current-pobj-get))
   (ph-project-open "a/.ph")
-  (should (equal "a/.ph" (ph-ven-db (ph-buffer-current-pobj-get))))
+  (should (equal (expand-file-name "a/.ph")
+				 (ph-ven-db (ph-buffer-current-pobj-get))))
 
-  (ph-project-close "a/.ph")
+  (ph-project-close (ph-vl-find "a/.ph"))
   (tdd-setup-global)
   )
 
@@ -181,7 +182,7 @@
   (should-not (ph-project-which))
 
   (ph-project-open "a/.ph")
-  (should (equal "a/.ph" (ph-project-which)))
+  (should (equal (expand-file-name "a/.ph") (ph-project-which)))
 
   (ph-project-close "a/.ph")
   (tdd-setup-global)

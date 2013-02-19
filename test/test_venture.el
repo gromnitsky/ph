@@ -103,7 +103,8 @@
 
 	;; read from the disk & compare
 	(setq p2 (ph-venture-unmarshalling ".ph"))
-	(should (equal "./.ph" (ph-ven-db p2))) ; after a fix
+	(should (equal (concat default-directory ".ph")
+				   (ph-ven-db p2))) ; after a fix
 	(should (ph-ven-p p2))
 	(should (equal (ph-ven-version p1) (ph-ven-version p2)))
 	(should (equal (ph-venture-opfl-get p1 "one") (ph-venture-opfl-get p2 "one")))

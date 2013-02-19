@@ -1,6 +1,6 @@
 -*-org-*-
 
-* TODO 0.0.1 [5/11]
+* TODO 0.0.1 [6/12]
 
 - [ ] show ' ph' in modeline for 'tracked' files only
 - [X] ph-project-new
@@ -9,13 +9,13 @@
 - [X] ph-project-close
   - [X] unwind-protect
 - [X] ph-project-which
-- [ ] ph-project-switch-buffer
-  - [ ] consider dired in root project directory as an eligible source
+- [X] ph-project-switch-buffer
 - [X] ph-project-switch
 - [ ] menu
 - [ ] ph-find-file-hook
 - [ ] ph-kill-buffer-hook
 - [ ] ph-vcs-init
+- [ ] add ph-buffer-pobj to dired buffers
 
 * TODO 0.1.x [0/3]
 
