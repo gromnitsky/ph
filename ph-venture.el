@@ -4,6 +4,9 @@
 
 (require 'ph-u)
 
+(defconst ph-SIM-DIR-MAX 64
+  "Max number of projects in similar named directories, e.g. /a/foo,
+/a/b/foo, c/foo")
 (defconst ph-DB-NAME ".ph" "A physicall db file name")
 (defvar ph-vl '() "Global list of currently opened projects")
 
@@ -17,7 +20,7 @@
 
 
 
-(defun ph-venture-name (pobj)
+(defun ph-venture-name-simple (pobj)
   "Extract project name from POBJ. Return nil on error."
   (cl-block nil
 	(unless (ph-ven-p pobj) (cl-return nil))
@@ -26,6 +29,44 @@
 	  (if (equal "" name)
 		  "Root"
 		name))))
+
+(defun ph-venture-name (pobj)
+  "Extract project name from POBJ. Return nil on error.
+Use ph-vl list to generate current unique name."
+  (cl-block here
+	(if (or (not (ph-ven-p pobj))
+			(= 0 (ph-vl-size))) (cl-return-from here nil))
+
+	;; projects: db => uniq_name
+	;; table: uniq_name => 1
+	(let ((projects (make-hash-table :test 'equal))
+		  (table (make-hash-table :test 'equal))
+		  result)
+
+	  (ph-vl-each-rev (lambda (idx)
+						(let ((name (ph-venture-name-simple idx))
+							  nameN)
+
+						  (if (not (gethash name table))
+							  (progn
+								(puthash name 1 table)
+								(puthash (ph-ven-db idx) name projects))
+							;; we have a project with similar name, try to
+							;; check it as "name<N>", where N >= 2.
+							(cl-loop for i from 2 to ph-SIM-DIR-MAX do
+									 (setq nameN (format "%s<%d>" name i))
+
+									 (when (not (gethash nameN table))
+									   (puthash nameN 1 table)
+									   (puthash (ph-ven-db idx) nameN projects)
+									   (cl-return)))
+							))))
+
+	  (unless (setq result (gethash (ph-ven-db pobj) projects))
+		(error "Probably ph-SIM-DIR-MAX was reached out--close some projects"))
+
+	  result
+	  )))
 
 (defun ph-venture-opfl-add (pobj file)
   (if (equal (substring file 0 1) "/")
@@ -133,6 +174,10 @@ Return nil on error or list of removed files."
   "Iterate through ph-vl list"
   (cl-loop for idx in ph-vl do (funcall blk idx)))
 
+(defun ph-vl-each-rev (blk)
+  "Iterate through ph-vl list"
+  (cl-loop for idx in (reverse ph-vl) do (funcall blk idx)))
+
 (defun ph-vl-find (db)
   "Return a pointer to some ph-vl object or nil."
   (cl-block nil
@@ -140,6 +185,17 @@ Return nil on error or list of removed files."
 	(ph-vl-each (lambda (pobj)
 				  (if (equal db (ph-ven-db pobj)) (cl-return pobj))
 				  ))
+	nil
+	))
+
+(defun ph-vl-find-by-name (name)
+  "Return a pointer to some ph-vl object or nil."
+  (cl-block nil
+	(unless name (cl-return nil))
+	(ph-vl-each (lambda (idx)
+				  (if (equal name (ph-venture-name idx)) (cl-return idx))
+				  ))
+	nil
 	))
 
 (defun ph-vl-rm (db)
@@ -156,7 +212,7 @@ Return t is something was removed, nil otherwise."
   "Add POBJ to ph-vl list.
 Return a pointer to a cell in ph-vl list or nil on error."
   (cl-block nil
-	(if (or (not (ph-ven-p pobj))) (cl-return nil))
+	(unless (ph-ven-p pobj) (cl-return nil))
 
 	(let (cell)
 	  (when (setq cell (ph-vl-find (ph-ven-db pobj)))
@@ -165,6 +221,14 @@ Return a pointer to a cell in ph-vl list or nil on error."
 		(cl-return cell))
 
 	  (car (push pobj ph-vl)))))
+
+(defun ph-vl-names ()
+  "Return a list of currently opened project names or nil"
+  (let ((names '()))
+	(ph-vl-each (lambda (idx)
+				(push (ph-venture-name idx) names)))
+	names
+	))
 
 
 

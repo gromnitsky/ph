@@ -9,12 +9,54 @@
 
 
 
-(ert-deftest ph-venture-name()
-  (should (equal "bar" (ph-venture-name (make-ph-ven :db "/foo/bar/.ph"))))
-  (should (equal "Root" (ph-venture-name (make-ph-ven :db "/.ph"))))
+(ert-deftest ph-venture-name-simple()
+  (should (equal "bar" (ph-venture-name-simple (make-ph-ven :db "/foo/bar/.ph"))))
+  (should (equal "Root" (ph-venture-name-simple (make-ph-ven :db "/.ph"))))
 
+  (should-not (ph-venture-name-simple nil))
+)
+
+(ert-deftest ph-venture-name()
   (should-not (ph-venture-name nil))
-  )
+  (should-not (ph-venture-name (make-ph-ven :db "/foo/bar/.ph")))
+
+  (let (p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11)
+	(ph-vl-add (setq p1 (make-ph-ven :db "/a/bar/.ph")))
+	(ph-vl-add (setq p2 (make-ph-ven :db "/b/x/foo/.ph")))
+	(ph-vl-add (setq p3 (make-ph-ven :db "/c/bar/.ph")))
+	(ph-vl-add (setq p4 (make-ph-ven :db "/d/xx/foo/.ph")))
+	(ph-vl-add (setq p5 (make-ph-ven :db "/e/foobar/.ph")))
+	(ph-vl-add (setq p6 (make-ph-ven :db "/f/foobar/.ph")))
+	(ph-vl-add (setq p7 (make-ph-ven :db "/g/baz/.ph")))
+	(ph-vl-add (setq p8 (make-ph-ven :db "/.ph")))
+	(ph-vl-add (setq p9 (make-ph-ven :db "/h/bar/.ph")))
+
+	(should (equal "bar" (ph-venture-name p1)))
+	(should (equal "foo" (ph-venture-name p2)))
+	(should (equal "bar<2>" (ph-venture-name p3)))
+	(should (equal "foo<2>" (ph-venture-name p4)))
+	(should (equal "foobar" (ph-venture-name p5)))
+	(should (equal "foobar<2>" (ph-venture-name p6)))
+	(should (equal "baz" (ph-venture-name p7)))
+	(should (equal "Root" (ph-venture-name p8)))
+	(should (equal "bar<3>" (ph-venture-name p9)))
+
+	;; add another
+	(ph-vl-add (setq p10 (make-ph-ven :db "/i/bar/.ph")))
+	(should (equal "bar<4>" (ph-venture-name p10)))
+
+	;; broke limit
+	(let ((ph-SIM-DIR-MAX 3))
+	  (ph-vl-add (setq p11 (make-ph-ven :db "/j/bar/.ph")))
+	  (should-error (ph-venture-name p11)))
+
+	;; remove some projects
+	(ph-vl-rm (ph-ven-db p3))
+	(should (equal "bar<3>" (ph-venture-name p10)))
+	(should (equal "bar<4>" (ph-venture-name p11)))
+
+	(ph-vl-reset)
+	))
 
 (ert-deftest ph-venture-opfl-each()
   (let (p1 list1)
@@ -31,7 +73,6 @@
 
 (ert-deftest ph-venture-new()
   (let (p1 p2 p21)
-	(ph-vl-reset)
 	(should (= 0 (ph-vl-size)))
 
 	(should-not (ph-venture-new nil))
@@ -127,6 +168,32 @@
 
 	(ph-vl-reset)
   ))
+
+(ert-deftest ph-vl-find-by-name()
+  (should-not (ph-vl-find-by-name nil))
+  (should-not (ph-vl-find-by-name "foo"))
+
+  (ph-vl-add (make-ph-ven :db "/a/bar/.ph"))
+  (ph-vl-add (make-ph-ven :db "/b/x/foo/.ph"))
+  (ph-vl-add (make-ph-ven :db "/c/bar/.ph"))
+
+  (should (equal "/a/bar/.ph" (ph-ven-db (ph-vl-find-by-name "bar"))))
+  (should (equal "/c/bar/.ph" (ph-ven-db (ph-vl-find-by-name "bar<2>"))))
+  (should-not (ph-vl-find-by-name "DOESN'T EXIST"))
+
+  (ph-vl-reset)
+  )
+
+(ert-deftest ph-vl-names()
+  (should-not (ph-vl-names))
+
+  (ph-vl-add (make-ph-ven :db "/a/bar/.ph"))
+  (ph-vl-add (make-ph-ven :db "/b/x/foo/.ph"))
+  (ph-vl-add (make-ph-ven :db "/c/bar/.ph"))
+
+  (should (equal '("bar" "foo" "bar<2>") (ph-vl-names)))
+  (ph-vl-reset)
+  )
 
 (ert-deftest ph-vl-rm()
   (let ((p1 (make-ph-ven :db "/foo/bar/.ph"))
