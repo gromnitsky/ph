@@ -8,6 +8,10 @@
 
 
 (defun ph-find-file-hook()
+  (cl-block nil
+	(if (not buffer-file-name) (cl-return))
+	(print (format "HERE %s %s" buffer-file-name major-mode))
+	)
   )
 
 (defun ph-kill-buffer-hook()
@@ -42,6 +46,7 @@ Show a warning if WARNUSER is t & pobj is nil."
 
 	  (dolist (idx (buffer-list))
 		(if (and (buffer-file-name idx)
+				 (local-variable-p 'ph-buffer-pobj idx)
 				 (setq cell (buffer-local-value 'ph-buffer-pobj idx))
 				 (eq pobj cell))
 			(setq flist (append flist (list idx)))))
@@ -248,7 +253,6 @@ Return selected project name."
 		(add-hook 'kill-buffer-hook 'ph-kill-buffer-hook))
 	(remove-hook 'find-file-hook 'ph-find-file-hook)
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
-	(ph-pl-reset)
 	))
 
 (provide 'ph)
