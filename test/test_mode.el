@@ -12,8 +12,6 @@
 
 
 (ert-deftest ph-project-open()
-  (ph-vl-reset)
-
   (should-not (ph-project-open nil))
   (should-not (ph-project-open "/DOESN'T EXIST"))
 
@@ -64,7 +62,7 @@
 	(should (equal 2 (length bf-b)))
 	(should (equal 4 (length bf-c)))
 
-	(ph-project-new "1/2/3/.ph")
+	(ph-project-new "1/2/3")
 	(should-not (ph-buffer-list (ph-vl-find "1/2/3/.ph")))
 
 	(should (equal 2 (length bf-a)))
@@ -78,7 +76,6 @@
 	))
 
 (ert-deftest ph-project-close()
-  (ph-vl-reset)
   (should-not (ph-project-close nil))
 
   ;; open 2 projects
@@ -104,7 +101,6 @@
   )
 
 (ert-deftest ph-project-new_simple()
-  (ph-vl-reset)
   (should-not (ph-project-new nil))
   (should-error (ph-project-new "a"))	; project already exists
 
@@ -113,6 +109,7 @@
 	(should (file-exists-p db1))
 	(should (equal 1 (ph-vl-size)))
 
+	(ph-project-close (ph-vl-find "project-new_simple/2/3/.ph"))
 	(tdd-setup-global)
 	))
 
@@ -120,8 +117,6 @@
   tdd-y-or-n)
 
 (ert-deftest ph-project-new_subproject()
-  (ph-vl-reset)
-
   ;; open 1st project
   (should (= 4 (ph-project-open "level-1/.ph")))
   (should (equal 1 (ph-vl-size)))
@@ -136,12 +131,12 @@
 	(should (= 2 (ph-project-open "level-1/.ph")))
 	(should (equal 2 (ph-vl-size)))
 
+	(ph-project-close (ph-vl-find "level-1/.ph"))
+	(ph-project-close (ph-vl-find "level-1/level-2/.ph"))
 	(tdd-setup-global)
 	))
 
 (ert-deftest ph-project-new_subproject_2()
-  (ph-vl-reset)
-
   ;; create a project
   (should (ph-project-new "."))
 
@@ -149,6 +144,7 @@
   (delete-file "level-1/.ph")
   (should (ph-project-new "level-1"))
 
+  (ph-project-close (ph-vl-find "level-1/.ph"))
   (tdd-setup-global)
   )
 
@@ -189,7 +185,7 @@
   (tdd-setup-global)
   )
 
-;; monkey patch
+; monkey patch
 (defun ido-completing-read (prompt
 							choices
 							&optional predicate require-match
@@ -208,9 +204,26 @@
 	(should (ph-project-switch-buffer))
 	(should (equal lst (car (ph-buffer-list (ph-vl-find "level-1/.ph")))))
 
-	(ph-project-close "level-1/.ph")
+	(ph-project-close (ph-vl-find "level-1/.ph"))
 	(tdd-setup-global)
 	))
+
+(ert-deftest ph-project-switch()
+  (should-error (ph-project-switch))
+
+  (ph-project-open "a/.ph")
+  (ph-project-open "b/.ph")
+  (ph-project-open "level-1/.ph")
+
+  (should (equal "level-1" (ph-project-switch)))
+  ;; FIXME: find dired buffer
+
+  (ph-project-close (ph-vl-find "a/.ph"))
+  (ph-project-close (ph-vl-find "b/.ph"))
+  (ph-project-close (ph-vl-find "level-1/.ph"))
+
+  (tdd-setup-global)
+  )
 
 
 

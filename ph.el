@@ -61,7 +61,7 @@ Return pobj db or nil on error."
 							 (current-buffer)))
 		  (cl-return nil)))
 
-	  (ph-warn 0 (format "%s" (ph-ven-db pobj)))
+	  (ph-warn 0 (format "%s: %s" (ph-venture-name pobj) (ph-ven-db pobj)))
 	  (ph-ven-db pobj)
 	  )))
 
@@ -150,15 +150,9 @@ Return nil on error."
 	;; kill buffers in usual emacs fashion, some buffers may be unsaved
 	;; & user can press C-g thus killing only a subset of buffers
 	(unwind-protect
-		(ph-venture-opfl-each pobj (lambda (key val)
-									 (let (bufname)
-									   (ignore-errors
-										 (setq bufname
-											   (get-file-buffer
-												(ph-venture-opfl-absolute pobj key)))
-
-										 (if bufname (kill-buffer bufname))
-										 ))))
+		(dolist (idx (ph-buffer-list pobj))
+		  (with-demoted-errors
+			(if idx (kill-buffer idx))))
 	  ;; always restore the hook
 	  (add-hook 'kill-buffer-hook 'ph-kill-buffer-hook))
 
@@ -226,6 +220,21 @@ Return a buffer name if switch was done."
 	buf
 	))
 
+(defun ph-project-switch ()
+  "Switch to a root directory of a selected opened project.
+Unlike ph-project-switch-buffer it doesn't consider previous user's choices.
+
+Return selected project name."
+  (interactive)
+  (if (= 0 (ph-vl-size))
+	  (error "No opened projects yet. Type ph-project-open or ph-project-new"))
+
+  (let (choice)
+	(when (setq choice (ido-completing-read "Project: " (ph-vl-names)))
+	  (find-file (ph-venture-opfl-prefix (ph-vl-find-by-name choice))))
+
+	choice
+	))
 
 
 
