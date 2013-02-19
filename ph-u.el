@@ -70,6 +70,11 @@ Return nil on error."
 	  (insert-file-contents file)
 	  (buffer-string))))
 
+(defun ph-buffer-mode-get (buffer-or-string)
+  "Returns the major mode associated with a buffer."
+  (with-current-buffer buffer-or-string
+	major-mode))
+
 
 
 (defun ph-vcs-init (dir &optional type)

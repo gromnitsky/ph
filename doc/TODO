@@ -1,6 +1,6 @@
 -*-org-*-
 
-* TODO 0.0.1 [5/10]
+* TODO 0.0.1 [5/11]
 
 - [ ] show ' ph' in modeline for 'tracked' files only
 - [X] ph-project-new
@@ -15,6 +15,7 @@
 - [ ] menu
 - [ ] ph-find-file-hook
 - [ ] ph-kill-buffer-hook
+- [ ] ph-vcs-init
 
 * TODO 0.1.x [0/3]
 

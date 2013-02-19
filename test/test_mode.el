@@ -11,6 +11,46 @@
 
 
 
+(ert-deftest ph-buffer-list()
+  (should-not (ph-buffer-list nil))
+
+  (let (bf-a bf-b bf-c)
+	(ph-project-open "a/.ph")
+	(ph-project-open "b/.ph")
+	(ph-project-open "level-1/.ph")
+
+	(should (setq bf-a (ph-buffer-list (ph-vl-find "a/.ph"))))
+	(should (setq bf-b (ph-buffer-list (ph-vl-find "b/.ph"))))
+	(should (setq bf-c (ph-buffer-list (ph-vl-find "level-1/.ph"))))
+
+	(should (equal 2 (length bf-a)))
+	(should (equal 2 (length bf-b)))
+	(should (equal 4 (length bf-c)))
+
+	(ph-project-new "1/2/3")
+	(should-not (ph-buffer-list (ph-vl-find "1/2/3/.ph")))
+
+	(should (equal 2 (length bf-a)))
+
+	;; cleanup
+	(ph-project-close (ph-vl-find "a/.ph"))
+	(ph-project-close (ph-vl-find "b/.ph"))
+	(ph-project-close (ph-vl-find "level-1/.ph"))
+	(ph-project-close (ph-vl-find "1/2/3/.ph"))
+	(tdd-setup-global)
+	))
+
+(ert-deftest ph-buffer-current-pobj-get()
+  (should-not (ph-buffer-current-pobj-get))
+  (ph-project-open "a/.ph")
+  (should (equal "a/.ph" (ph-ven-db (ph-buffer-current-pobj-get))))
+
+  (ph-project-close "a/.ph")
+  (tdd-setup-global)
+  )
+
+
+
 (ert-deftest ph-project-open()
   (should-not (ph-project-open nil))
   (should-not (ph-project-open "/DOESN'T EXIST"))
@@ -43,35 +83,6 @@
 	;; cleanup
 	(ph-project-close (ph-vl-find "a/.ph"))
 	(ph-project-close (ph-vl-find "b/.ph"))
-	(tdd-setup-global)
-	))
-
-(ert-deftest ph-buffer-list()
-  (should-not (ph-buffer-list nil))
-
-  (let (bf-a bf-b bf-c)
-	(ph-project-open "a/.ph")
-	(ph-project-open "b/.ph")
-	(ph-project-open "level-1/.ph")
-
-	(should (setq bf-a (ph-buffer-list (ph-vl-find "a/.ph"))))
-	(should (setq bf-b (ph-buffer-list (ph-vl-find "b/.ph"))))
-	(should (setq bf-c (ph-buffer-list (ph-vl-find "level-1/.ph"))))
-
-	(should (equal 2 (length bf-a)))
-	(should (equal 2 (length bf-b)))
-	(should (equal 4 (length bf-c)))
-
-	(ph-project-new "1/2/3")
-	(should-not (ph-buffer-list (ph-vl-find "1/2/3/.ph")))
-
-	(should (equal 2 (length bf-a)))
-
-	;; cleanup
-	(ph-project-close (ph-vl-find "a/.ph"))
-	(ph-project-close (ph-vl-find "b/.ph"))
-	(ph-project-close (ph-vl-find "level-1/.ph"))
-	(ph-project-close (ph-vl-find "1/2/3/.ph"))
 	(tdd-setup-global)
 	))
 
@@ -166,15 +177,6 @@
   (tdd-setup-global)
   )
 
-(ert-deftest ph-buffer-current-pobj-get()
-  (should-not (ph-buffer-current-pobj-get))
-  (ph-project-open "a/.ph")
-  (should (equal "a/.ph" (ph-ven-db (ph-buffer-current-pobj-get))))
-
-  (ph-project-close "a/.ph")
-  (tdd-setup-global)
-  )
-
 (ert-deftest ph-project-which()
   (should-not (ph-project-which))
 
@@ -216,8 +218,10 @@
   (ph-project-open "level-1/.ph")
 
   (should (equal "level-1" (ph-project-switch)))
-  ;; FIXME: find dired buffer
+  (should (equal 'dired-mode
+				 (buffer-local-value 'major-mode (get-buffer "level-1"))))
 
+  (kill-buffer (get-buffer "level-1"))
   (ph-project-close (ph-vl-find "a/.ph"))
   (ph-project-close (ph-vl-find "b/.ph"))
   (ph-project-close (ph-vl-find "level-1/.ph"))
