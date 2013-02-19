@@ -14,7 +14,11 @@
 
 (defun ph-warn (level str)
   "Print a message via (message) according to LEVEL."
-  (if (<= level ph-verbose) (message (concat ph-meta-name ": " str))))
+  (when (<= level ph-verbose)
+	(if (= 0 level)
+		(message str)
+	  (message (concat ph-meta-name ": " str)))
+	))
 
 (defun ph-chomp (str)
   "Chomp leading and tailing whitespace from STR."
