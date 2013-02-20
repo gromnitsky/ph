@@ -228,13 +228,14 @@
   (should-not (ph-db-find ""))
   (should-not (ph-db-find "/DOESN'T EXIST"))
 
-  (should (equal "a/.ph" (ph-db-find "a/b/c/one.txt")))
+  (should (equal "a/b/.ph" (ph-db-find "a/b/c/one.txt")))
   (should (equal "a/.ph" (ph-db-find "a/THIS DOESN'T EXIST/TOO")))
   (should (equal "a/.ph" (ph-db-find "a")))
 
-  (should-not (ph-db-find "a/b/c/one.txt" ""))
+  (should-not (ph-db-find "b/b/c/one.txt" ""))
 
-  (should (equal "a/.ph" (ph-db-find "a/b")))
+  (should (equal "a/b/.ph" (ph-db-find "a/b")))
+  (should (equal "b/.ph" (ph-db-find "b/b/c/one.txt")))
 
   (should-not (ph-db-find "empty.txt"))
   (should-not (ph-db-find "/root"))
@@ -245,12 +246,12 @@
   (should-not (ph-db-find-subproject ""))
   (should-not (ph-db-find-subproject "/DOESN'T EXIST"))
 
-  (should (equal "a/.ph" (ph-db-find-subproject "a/b/c/")))
-  (should (equal "a/.ph" (ph-db-find-subproject "a/b")))
-  (should-not (ph-db-find-subproject "a/"))
-  (should-not (ph-db-find-subproject "a"))
+  (should (equal "b/.ph" (ph-db-find-subproject "b/b/c/")))
+  (should (equal "b/.ph" (ph-db-find-subproject "b/b")))
+  (should-not (ph-db-find-subproject "b/"))
+  (should-not (ph-db-find-subproject "b"))
 
-  (cd "a")
+  (cd "b")
   (should-not (ph-db-find-subproject "./"))
   (should (equal "./.ph" (ph-db-find-subproject "b/c")))
   (should (equal "./.ph" (ph-db-find-subproject "b/")))

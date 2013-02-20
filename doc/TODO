@@ -1,6 +1,6 @@
 -*-org-*-
 
-* TODO 0.0.1 [9/12]
+* TODO 0.0.1 [9/11]
 
 - [X] ph-project-new
 - [X] ph-project-open
@@ -14,11 +14,4 @@
 - [X] ph-kill-buffer-hook
 - [ ] menu
 - [ ] show ' ph' in modeline for 'tracked' files only
-- [ ] ph-vcs-init
 - [X] add ph-buffer-pobj to dired buffers
-
-* TODO 0.1.x [0/3]
-
-- [ ] ido support for opfl
-- [ ] git grep
-- [ ] ph-project-find-file

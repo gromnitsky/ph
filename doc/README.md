@@ -16,8 +16,6 @@ FIXME: a brave link to youtube
 * Auto-remembering/-forgetting what file belongs to a project
 * Open/close project files with 1 command.
 
-FIXME: explain more
-
 ## Installation
 
 `.emacs`:
@@ -77,7 +75,6 @@ And choose .ph file location. OMG! It's so cool!
 
 ## Requirements
 
-* git
 * Linux/BSD
 * Emacs 24.3
 * GNU Make

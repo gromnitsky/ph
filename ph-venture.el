@@ -239,8 +239,8 @@ Return a pointer to a cell in ph-vl list or nil on error."
 
 	(unless startDir (setq startDir file))
 	(let ((db (concat startDir "/" ph-DB-NAME)))
-	  (when (and (file-readable-p db) (ph-vcs-detect startDir))
-		(cl-return db))
+	  (if (file-readable-p db)
+		  (cl-return db))
 
 	  ;; didn't find db file
 	  (if (or (equal "." startDir) (equal "/" startDir)) (cl-return nil))

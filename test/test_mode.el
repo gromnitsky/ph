@@ -123,6 +123,7 @@
 
   (let (db1)
 	(should (setq db1 (ph-project-new "project-new_simple/2/3")))
+	(cd tdd-work-dir)
 	(should (file-exists-p db1))
 	(should (equal 1 (ph-vl-size)))
 
@@ -142,6 +143,7 @@
   (let (db2)
 	;; create a subproject
 	(should (setq db2 (ph-project-new "level-1/level-2")))
+	(cd tdd-work-dir)
 	(should (equal 1 (ph-vl-size)))
 	(should (ph-vl-find db2))
 
@@ -248,28 +250,28 @@
   (find-file "empty.txt")
   (should (equal 0 (ph-vl-size)))
 
-  (find-file "a/b/c/memory")
+  (find-file "b/b/c/memory")
   (should (equal 0 (ph-vl-size)))
 
   (cd tdd-work-dir)
-  (should (equal 2 (ph-project-open "a/.ph")))
+  (should (equal 2 (ph-project-open "b/.ph")))
   (should (equal 1 (ph-vl-size)))
-  (should (equal 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+  (should (equal 2 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
 
 	;; record another file
-  (find-file "a/b/c/one.txt")
+  (find-file "b/b/c/one.txt")
   (cd tdd-work-dir)
-  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
 
   ;; parse raw db
-  (should (equal 3 (ph-venture-opfl-size (ph-venture-unmarshalling "a/.ph"))))
+  (should (equal 3 (ph-venture-opfl-size (ph-venture-unmarshalling "b/.ph"))))
 
   (find-file "/root/boots.txt")
   (cd tdd-work-dir)
-  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
 
   (kill-buffer "empty.txt")
-  (ph-project-close (ph-vl-find "a/.ph"))
+  (ph-project-close (ph-vl-find "b/.ph"))
   (tdd-setup-global)
   )
 
@@ -339,19 +341,29 @@
   (find-file "/etc")
   (should-not (local-variable-p 'ph-buffer-pobj (get-buffer "etc")))
 
-  ;; open some project dir
+  ;; open some project dirs
+  (cd tdd-work-dir)
+  (mkdir "a/foo/bar" t)
+  (find-file "a/foo")
+  (should (local-variable-p 'ph-buffer-pobj (get-buffer "foo")))
+  (should (local-variable-p 'ph-buffer-pobj (get-buffer "bar")))
+
+  ;; open file in closed project
   (cd tdd-work-dir)
   (find-file "a/b/c")
-  (should (local-variable-p 'ph-buffer-pobj (get-buffer "c")))
+  (should-not (local-variable-p 'ph-buffer-pobj (get-buffer "c")))
 
   ;; cleanup
   (cd tdd-work-dir)
   (ph-project-close (ph-vl-find "a/.ph"))
   (should-not (get-buffer "a"))
-  (should-not (get-buffer "c"))
+  (should-not (get-buffer "foo"))
 
   (kill-buffer "tmp")
   (kill-buffer "etc")
+  (kill-buffer "c")
+;  (print (buffer-list))
+  (tdd-setup-global)
   )
 
 

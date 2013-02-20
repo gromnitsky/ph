@@ -7,9 +7,6 @@
 
 (defvar ph-verbose 2 "Verbosity level")
 
-(defconst ph-vcs-list '((git . ".git")))
-(defvar ph-vcs-def 'git)
-
 
 
 (defun ph-warn (level str)
@@ -74,30 +71,6 @@ Return nil on error."
   "Returns the major mode associated with a buffer."
   (with-current-buffer buffer-or-string
 	major-mode))
-
-
-
-(defun ph-vcs-init (dir &optional type)
-  "Create a new TYPE repo and add all files to it from DIR.
-Don't make a commit. Return t on success."
-  (unless type (setq type ph-vcs-def))
-
-  ;; FIXME: write it
-  (ignore-errors
-	(mkdir (concat dir "/.git")))
-  t
-  )
-
-(defun ph-vcs-detect (dir)
-  "Check for specific files in DIR, return a symbol if found."
-  (cl-block here
-	(if (not dir) (cl-return-from here nil))
-
-	(cl-loop for idx in ph-vcs-list do
-			 (if (file-directory-p (concat dir "/" (cdr idx)))
-				 (cl-return-from here (car idx))))
-	nil
-	))
 
 
 

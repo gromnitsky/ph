@@ -196,7 +196,7 @@ project & clean its db from subproject files."
   (cl-block nil
 	(if (not dir) (cl-return nil))
 	(let ((db (ph-db-get dir))
-		  parDb parObj)
+		  parDb parObj pobj)
 	  (if (file-exists-p db)
 		  (error "There is already a project in %s" dir))
 
@@ -218,9 +218,11 @@ New project was NOT created" parDb))
 			))
 	  (if (not (file-directory-p dir)) (mkdir dir t))
 
-	  (unless (and (ph-venture-marshalling (ph-venture-new db))
-				   (ph-vcs-init dir))
+	  (setq pobj (ph-venture-new db))
+	  (unless (ph-venture-marshalling pobj)
 		(error "Cannot create project in %s" dir))
+	  ;; open dired & forcibly mark it as a project buffer
+	  (if (find-file dir) (ph-buffer-pobj-set pobj))
 
 	  db
 	  )))
@@ -267,7 +269,7 @@ Return selected project name."
 
 
 (define-minor-mode ph-mode
-  "Toggle global minor Project Helper files tracking mode."
+  "Toggle global minor Project Helper mode."
   :lighter " ph"
   :global t
   (if ph-mode

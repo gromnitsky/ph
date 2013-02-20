@@ -4,32 +4,35 @@ Emacs Project Helper
 
 ** Project
 
-From a user standpoint it's a directory that has .ph file in it + git
-repo. Every other file in the directory belongs to the project. User may
-think that git repo is a project & .ph file is just a file that emacs
-need to keep track of project files in emacs.
+From a user standpoint it's a directory that has .ph file in it. Every
+other file in the directory belongs to the project. User may think that
+the directory is the project itself & .ph file is just a file that emacs
+need to keep track of project files.
 
-Child directories cannot be recorded in .ph file, but they are
-automatically marked as project belongings if user opens them so when
-closing the project they will be closed too.
+Child directories (dired buffers) cannot be recorded in .ph file, but
+they are automatically marked as project belongings if user opens them,
+so when closing the project they will be closed too.
 
 ** Project name
 
-A directory with project files. For example, if /foo/bar contains a git
-repo + .ph file then project name is 'bar'. If / directory
-contains .ph + git repo, then project name is 'Root'.
+A directory with project files. For example, if /foo/bar contains .ph
+file then project name is 'bar'. If / directory contains .ph, then
+project name is 'Root'. If there are 2 open projects in 2 directories:
+/foo/bar & /bar their names will be 'bar' and 'bar<2>' correspondingly.
+
+Project names are dynamic & are generated automatically in the similar
+way as emacs invents names for buffers.
 
 ** Subproject
 
 It's possible to have one project enclosed into another. Technically
-they completely independent from each other because they use different
-git repos. It's not possible to have a file that belongs to 2
-projects. (Symlinks? FIXME)
+they completely independent from each other. It's not possible to have a
+file that belongs to 2 projects. (Symlinks? FIXME)
 
 * Lisp
 ** Project
 
-Object that represent project in memory ('ven' from venture):
+Object that represent project in memory ('ven' is from venture):
 
 (cl-defstruct ph-ven
   db
@@ -45,11 +48,11 @@ deletes its name form opfl.
 
 db is always a full path to the .ph file. opfl contains only relative
 paths to the parent dir (this is done for easily moving the project
-directory).
+directory elsewhere).
 
 ** Global list
 
-ph-vl is a list of ph-ven cells and means currently opened projects in
+ph-vl is a list of ph-ven cells and holds currently opened projects in
 emacs. It's updated only if user opens/closes file that belongs to some
 project.
 
@@ -57,9 +60,10 @@ It's persistent across toggling ph-mode but vanishes on emacs exit.
 
 ** Project actions
 
-All edits to project is done only thought ph-venture-* functions. Its
-prohibited to parse or modify db file or corresponding cell in ph-vl
-list.
+All user-level commands are in ph-project-* functions.
+
+Its prohibited to parse or modify db file or corresponding cell in ph-vl
+list. Use only ph-venture-* functions for that.
 
 * BUGS
 
