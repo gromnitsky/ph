@@ -112,7 +112,7 @@ WARNING: it rewrites the file every time."
   (cl-block nil
 	(unless (ph-ven-p pobj) (cl-return nil))
 
-	(condition-case err
+	(condition-case nil
 		;; most typical error would be "permission denied" if user has
 		;; opened a project on a read-only partition
 		(with-temp-file (ph-ven-db pobj)
@@ -126,7 +126,7 @@ WARNING: it rewrites the file every time."
   (cl-block nil
 	(let ((raw (ph-read-file file))
 		  pobj)
-	  (condition-case err
+	  (condition-case nil
 		  (setq pobj (read raw))
 		(error (cl-return nil)))
 	  (unless (ph-ven-p pobj) (cl-return nil))

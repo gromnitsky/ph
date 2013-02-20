@@ -3,7 +3,7 @@
 ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 
 %.elc: %.el
-	emacs -Q -batch -f batch-byte-compile $<
+	emacs -Q -batch -L `pwd` -f batch-byte-compile $<
 
 test:
 	$(MAKE) -C test fixtures

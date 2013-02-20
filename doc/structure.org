@@ -9,6 +9,10 @@ repo. Every other file in the directory belongs to the project. User may
 think that git repo is a project & .ph file is just a file that emacs
 need to keep track of project files in emacs.
 
+Child directories cannot be recorded in .ph file, but they are
+automatically marked as project belongings if user opens them so when
+closing the project they will be closed too.
+
 ** Project name
 
 A directory with project files. For example, if /foo/bar contains a git
