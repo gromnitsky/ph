@@ -12,6 +12,7 @@
 
 
 (ert-deftest ph-buffer-list()
+  (ph-mode nil)
   (should-not (ph-buffer-list nil))
 
   (let (bf-a bf-b bf-c)
@@ -41,6 +42,7 @@
 	))
 
 (ert-deftest ph-buffer-pobj-get()
+  (ph-mode nil)
   (should-not (ph-buffer-pobj-get))
   (ph-project-open "a/.ph")
   (should (equal (expand-file-name "a/.ph")
@@ -53,6 +55,7 @@
 
 
 (ert-deftest ph-project-open()
+  (ph-mode nil)
   (should-not (ph-project-open nil))
   (should-not (ph-project-open "/DOESN'T EXIST"))
 
@@ -88,6 +91,7 @@
 	))
 
 (ert-deftest ph-project-close()
+  (ph-mode nil)
   (should-not (ph-project-close nil))
 
   ;; open 2 projects
@@ -113,6 +117,7 @@
   )
 
 (ert-deftest ph-project-new_simple()
+  (ph-mode nil)
   (should-not (ph-project-new nil))
   (should-error (ph-project-new "a"))	; project already exists
 
@@ -129,6 +134,7 @@
   tdd-y-or-n)
 
 (ert-deftest ph-project-new_subproject()
+  (ph-mode nil)
   ;; open 1st project
   (should (= 4 (ph-project-open "level-1/.ph")))
   (should (equal 1 (ph-vl-size)))
@@ -149,6 +155,7 @@
 	))
 
 (ert-deftest ph-project-new_subproject_2()
+  (ph-mode nil)
   ;; create a project
   (should (ph-project-new "."))
 
@@ -161,6 +168,7 @@
   )
 
 (ert-deftest ph-project-new_subproject_fail()
+  (ph-mode nil)
   (let ((tdd-y-or-n nil))
 	(should-not (ph-project-new "level-1/level-2"))
 	)
@@ -179,6 +187,7 @@
   )
 
 (ert-deftest ph-project-which()
+  (ph-mode nil)
   (should-not (ph-project-which))
 
   (ph-project-open "a/.ph")
@@ -196,6 +205,7 @@
   (car (last choices)))
 
 (ert-deftest ph-project-switch-buffer()
+  (ph-mode nil)
   (should-error (ph-project-switch-buffer nil))
   (should-error (ph-project-switch-buffer))
 
@@ -212,6 +222,7 @@
 	))
 
 (ert-deftest ph-project-switch()
+  (ph-mode t)
   (should-error (ph-project-switch))
 
   (ph-project-open "a/.ph")
@@ -222,9 +233,10 @@
   (should (equal 'dired-mode
 				 (buffer-local-value 'major-mode (get-buffer "level-1"))))
 
-  (kill-buffer (get-buffer "level-1"))
+  (cd tdd-work-dir)
   (ph-project-close (ph-vl-find "a/.ph"))
   (ph-project-close (ph-vl-find "b/.ph"))
+  ;; "level-1" dired buffer must be killed automatically
   (ph-project-close (ph-vl-find "level-1/.ph"))
 
   (tdd-setup-global)
@@ -307,6 +319,39 @@
 
   (ph-project-close (ph-vl-find "a/.ph"))
   (tdd-setup-global)
+  )
+
+(ert-deftest ph-dired-after-readin-hook()
+  (ph-mode t)
+
+  ;; open some dir
+  (find-file "/tmp")
+  (should-not (local-variable-p 'ph-buffer-pobj (get-buffer "tmp")))
+
+  ;; open project & its root dir
+  (cd tdd-work-dir)
+  (ph-project-open "a/.ph")
+  (cd tdd-work-dir)
+  (find-file "a")
+  (should (local-variable-p 'ph-buffer-pobj (get-buffer "a")))
+
+  ;; open some non-project dir
+  (find-file "/etc")
+  (should-not (local-variable-p 'ph-buffer-pobj (get-buffer "etc")))
+
+  ;; open some project dir
+  (cd tdd-work-dir)
+  (find-file "a/b/c")
+  (should (local-variable-p 'ph-buffer-pobj (get-buffer "c")))
+
+  ;; cleanup
+  (cd tdd-work-dir)
+  (ph-project-close (ph-vl-find "a/.ph"))
+  (should-not (get-buffer "a"))
+  (should-not (get-buffer "c"))
+
+  (kill-buffer "tmp")
+  (kill-buffer "etc")
   )
 
 

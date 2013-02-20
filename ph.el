@@ -38,6 +38,20 @@
 		(ph-venture-opfl-add pobj file))
 	  )))
 
+(defun ph-dired-after-readin-hook ()
+  "Marks buffer as belonging to project if dired dir is a child to project dir."
+  (cl-block nil
+	(let (pobj cwd db)
+	  (unless (stringp dired-directory) (cl-return))
+	  (setq cwd (directory-file-name (expand-file-name dired-directory)))
+
+	  (unless (setq db (ph-db-find cwd)) (cl-return))
+
+	  (if (setq pobj (ph-vl-find db)) (ph-buffer-pobj-set pobj))
+	  )))
+
+
+
 (defun ph-buffer-pobj-get (&optional buf)
   (unless (bufferp buf) (setq buf (current-buffer)))
 
@@ -61,8 +75,7 @@
 	  (unless (ph-ven-p pobj) (cl-return flist))
 
 	  (dolist (idx (buffer-list))
-		(if (and (buffer-file-name idx)
-				 (setq cell (ph-buffer-pobj-get idx))
+		(if (and (setq cell (ph-buffer-pobj-get idx))
 				 (eq pobj cell))
 			(setq flist (append flist (list idx)))))
 	  flist)))
@@ -260,8 +273,10 @@ Return selected project name."
   (if ph-mode
 	  (progn
 		(add-hook 'find-file-hook 'ph-find-file-hook)
+		(add-hook 'dired-after-readin-hook 'ph-dired-after-readin-hook)
 		(add-hook 'kill-buffer-hook 'ph-kill-buffer-hook))
 	(remove-hook 'find-file-hook 'ph-find-file-hook)
+	(remove-hook 'dired-after-readin-hook 'ph-dired-after-readin-hook)
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	))
 

@@ -1,6 +1,6 @@
 -*-org-*-
 
-* TODO 0.0.1 [8/12]
+* TODO 0.0.1 [9/12]
 
 - [X] ph-project-new
 - [X] ph-project-open
@@ -15,7 +15,7 @@
 - [ ] menu
 - [ ] show ' ph' in modeline for 'tracked' files only
 - [ ] ph-vcs-init
-- [ ] add ph-buffer-pobj to dired buffers
+- [X] add ph-buffer-pobj to dired buffers
 
 * TODO 0.1.x [0/3]
 
