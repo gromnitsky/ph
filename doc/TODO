@@ -1,8 +1,7 @@
 -*-org-*-
 
-* TODO 0.0.1 [7/12]
+* TODO 0.0.1 [8/12]
 
-- [ ] show ' ph' in modeline for 'tracked' files only
 - [X] ph-project-new
 - [X] ph-project-open
   - [X] unwind-protect
@@ -11,9 +10,10 @@
 - [X] ph-project-which
 - [X] ph-project-switch-buffer
 - [X] ph-project-switch
-- [ ] menu
 - [X] ph-find-file-hook
-- [ ] ph-kill-buffer-hook
+- [X] ph-kill-buffer-hook
+- [ ] menu
+- [ ] show ' ph' in modeline for 'tracked' files only
 - [ ] ph-vcs-init
 - [ ] add ph-buffer-pobj to dired buffers
 

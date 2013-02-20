@@ -40,11 +40,11 @@
 	(tdd-setup-global)
 	))
 
-(ert-deftest ph-buffer-current-pobj-get()
-  (should-not (ph-buffer-current-pobj-get))
+(ert-deftest ph-buffer-pobj-get()
+  (should-not (ph-buffer-pobj-get))
   (ph-project-open "a/.ph")
   (should (equal (expand-file-name "a/.ph")
-				 (ph-ven-db (ph-buffer-current-pobj-get))))
+				 (ph-ven-db (ph-buffer-pobj-get))))
 
   (ph-project-close (ph-vl-find "a/.ph"))
   (tdd-setup-global)
@@ -255,6 +255,55 @@
   (find-file "/root/boots.txt")
   (cd tdd-work-dir)
   (should (equal 3 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+  (kill-buffer "empty.txt")
+  (ph-project-close (ph-vl-find "a/.ph"))
+  (tdd-setup-global)
+  )
+
+(ert-deftest ph-kill-file-hook()
+  (ph-mode t)
+
+  ;; check non-project file
+  (find-file "empty.txt")
+  (should (equal 0 (ph-vl-size)))
+  (should (get-buffer "empty.txt"))
+  (kill-buffer "empty.txt")
+  (should-not (get-buffer "empty.txt"))
+
+  ;; project a
+  (should (equal 2 (ph-project-open "a/.ph")))
+  (should (equal 1 (ph-vl-size)))
+  (should (equal 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+  ;; kill buffer
+  (kill-buffer "three.txt")
+  (should-not (get-buffer "three.txt"))
+  (should (equal 1 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+  ;; parse raw db
+  (should (= 1 (ph-venture-opfl-size (ph-venture-unmarshalling "a/.ph"))))
+
+  (ph-project-close (ph-vl-find "a/.ph"))
+  (tdd-setup-global)
+  )
+
+(ert-deftest ph-kill-file-hook_permission_denied()
+  (ph-mode t)
+
+  ;; project a
+  (should (equal 2 (ph-project-open "a/.ph")))
+  (should (equal 1 (ph-vl-size)))
+  (should (equal 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+  ;; fail to remove killed buffer from db
+  (chmod "a/.ph" #o400)
+  (kill-buffer "three.txt")
+  (should-not (get-buffer "three.txt"))
+  (should (equal 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+  ;; parse raw db
+  (should (equal 2 (ph-venture-opfl-size (ph-venture-unmarshalling "a/.ph"))))
 
   (ph-project-close (ph-vl-find "a/.ph"))
   (tdd-setup-global)

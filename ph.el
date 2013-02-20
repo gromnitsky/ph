@@ -9,8 +9,8 @@
 
 (defun ph-find-file-hook()
   (cl-block nil
-	(if (not buffer-file-name) (cl-return))
 	(let (db pobj file)
+	  (if (not buffer-file-name) (cl-return))
 	  (unless (setq db (ph-db-find buffer-file-name)) (cl-return nil))
 
 	  (when (setq pobj (ph-vl-find db))
@@ -22,26 +22,37 @@
 	  )))
 
 (defun ph-kill-buffer-hook()
-  )
+  (cl-block nil
+	(if (or (not buffer-file-name)
+			(not (ph-buffer-pobj-get)))
+			(cl-return))
+
+	(let (pobj file)
+	  (setq pobj (ph-buffer-pobj-get))
+	  (setq file (ph-file-relative buffer-file-name
+								   (ph-dirname (ph-ven-db pobj))))
+
+	  (ph-venture-opfl-rm pobj file)
+	  (unless (ph-venture-marshalling pobj)
+		;; restore file in ph-vl POBJ if marshalling failed
+		(ph-venture-opfl-add pobj file))
+	  )))
+
+(defun ph-buffer-pobj-get (&optional buf)
+  (unless (bufferp buf) (setq buf (current-buffer)))
+
+  (if (and (local-variable-p 'ph-buffer-pobj buf)
+		   (ph-ven-p (buffer-local-value 'ph-buffer-pobj buf)))
+	  (buffer-local-value 'ph-buffer-pobj buf)))
 
 (defun ph-buffer-pobj-set (pobj)
-  (if (and buffer-file-name (ph-ven-p pobj))
+  (if (ph-ven-p pobj)
 	  (setq-local ph-buffer-pobj pobj)
 	))
 
 (defun ph-buffer-pobj-unset ()
   (ignore-errors
 	(makunbound ph-buffer-pobj)))
-
-(defun ph-buffer-current-pobj-get (&optional warnUser)
-  "Return pobj for current buffer or nil.
-Show a warning if WARNUSER is t & pobj is nil."
-  (if (and (local-variable-p 'ph-buffer-pobj) (ph-ven-p ph-buffer-pobj))
-	  ph-buffer-pobj
-	(when warnUser
-	  (ph-warn 0 (format "%s doesn't belong to any opened project"
-						 (current-buffer))))
-	nil))
 
 (defun ph-buffer-list (pobj)
   "Iterate through buffer-list & return only POBJ buffers."
@@ -51,29 +62,26 @@ Show a warning if WARNUSER is t & pobj is nil."
 
 	  (dolist (idx (buffer-list))
 		(if (and (buffer-file-name idx)
-				 (local-variable-p 'ph-buffer-pobj idx)
-				 (setq cell (buffer-local-value 'ph-buffer-pobj idx))
+				 (setq cell (ph-buffer-pobj-get idx))
 				 (eq pobj cell))
 			(setq flist (append flist (list idx)))))
 	  flist)))
 
 
 
-(defun ph-project-which ()
+(defun ph-project-which (&optional pobj)
   "Print a path to a project db for current buffer.
 Return pobj db or nil on error."
   (interactive)
   (cl-block nil
-	(let ((pobj (ph-buffer-current-pobj-get)))
-	  (unless (ph-ven-p pobj)
-		(progn
-		  (ph-warn 0 (format "%s doesn't belong to any opened project"
-							 (current-buffer)))
-		  (cl-return nil)))
+	(when (and (not (ph-ven-p pobj))
+			   (not (setq pobj (ph-buffer-pobj-get))))
+	  (ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
+	  (cl-return nil))
 
-	  (ph-warn 0 (format "%s: %s" (ph-venture-name pobj) (ph-ven-db pobj)))
-	  (ph-ven-db pobj)
-	  )))
+	(ph-warn 0 (format "%s: %s" (ph-venture-name pobj) (ph-ven-db pobj)))
+	(ph-ven-db pobj)
+	))
 
 (defun ph-project-parse (file)
   "Load a project form FILE as db and return the project object.
@@ -148,9 +156,10 @@ Return nil on error."
   "Close all currently opened project files. Return t on success."
   (interactive)
   (cl-block nil
-	(unless (ph-ven-p pobj)
-	  (when (not (setq pobj (ph-buffer-current-pobj-get t)))
-		(cl-return nil)))
+  (when (and (not (ph-ven-p pobj))
+			 (not (setq pobj (ph-buffer-pobj-get))))
+	(ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
+	(cl-return nil))
 
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	;; kill buffers in usual emacs fashion, some buffers may be unsaved
@@ -208,7 +217,7 @@ New project was NOT created" parDb))
 Return a buffer name if switch was done."
   (interactive)
   (if (and (not (ph-ven-p pobj))
-		   (not (setq pobj (ph-buffer-current-pobj-get t))))
+		   (not (setq pobj (ph-buffer-pobj-get))))
 	  (error "%s doesn't belong to any opened project" (current-buffer)))
 
   (let ((flist '())
