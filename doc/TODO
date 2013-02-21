@@ -1,6 +1,6 @@
 -*-org-*-
 
-* TODO 0.0.1 [9/11]
+* TODO 0.0.1 [11/13]
 
 - [X] ph-project-new
 - [X] ph-project-open
@@ -12,6 +12,7 @@
 - [X] ph-project-switch
 - [X] ph-find-file-hook
 - [X] ph-kill-buffer-hook
-- [ ] menu
-- [ ] show ' ph' in modeline for 'tracked' files only
+- [X] menu
+- [X] show ' ph' in modeline for 'tracked' files only
 - [X] add ph-buffer-pobj to dired buffers
+- [ ] recursive check for subproject

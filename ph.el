@@ -144,11 +144,9 @@ Return nil on error."
 								  (setq pfile (ph-venture-opfl-absolute pobj key))
 								  (if (file-readable-p pfile)
 									  (condition-case err
-										  (progn
-											(find-file pfile)
+										  (when (find-file pfile)
 											(ph-buffer-pobj-set cell)
-											(cl-incf openedFiles)
-											)
+											(cl-incf openedFiles))
 										(error
 										 (ph-venture-opfl-rm pobj key)
 										 (ph-warn 0 "find-file failed: %s"
@@ -164,6 +162,11 @@ Return nil on error."
 		  (ph-venture-marshalling pobj))
 
 	  openedFiles)))
+
+(defun ph-project-close-by-db (db)
+  "Use only in dynamic menu generation."
+  (let ((pobj (ph-vl-find db)))
+	(if pobj (ph-project-close pobj))))
 
 (defun ph-project-close (&optional pobj)
   "Close all currently opened project files. Return t on success."
@@ -250,27 +253,57 @@ Return a buffer name if switch was done."
 	buf
 	))
 
-(defun ph-project-switch ()
-  "Switch to a root directory of a selected opened project.
-Unlike ph-project-switch-buffer it doesn't consider previous user's choices.
+(defun ph-project-dired-open (name)
+  "Open a dired buffer with root directory of NAME project.
+NAME is a string that only ph-venture-name function can return."
+  (if name
+	  (find-file (ph-venture-opfl-prefix (ph-vl-find-by-name name)))))
 
-Return selected project name."
-  (interactive)
+(defun ph-project-select ()
+  "Ido-style project selection. Return selected project name.
+Unlike ph-project-switch-buffer it doesn't consider previous user's choices."
   (if (= 0 (ph-vl-size))
 	  (error "No opened projects yet. Type ph-project-open or ph-project-new"))
 
+  (ido-completing-read "Project: " (ph-vl-names)))
+
+(defun ph-project-switch ()
+  "Switch to a root directory of a selected opened project.
+Return selected project name."
+  (interactive)
   (let (choice)
-	(when (setq choice (ido-completing-read "Project: " (ph-vl-names)))
-	  (find-file (ph-venture-opfl-prefix (ph-vl-find-by-name choice))))
+	(when (setq choice (ph-project-select))
+	  (ph-project-dired-open choice))
 
 	choice
+	))
+
+(defun ph-project-switch-buffer-other-project ()
+  "Switch to project, then switch to some buffer. Very handy.
+Return selected buffer."
+  (interactive)
+  (let (projName buf)
+	(when (setq projName (ph-project-select))
+	  (set buf (ph-project-switch-buffer (ph-vl-find-by-name projName))))
+
+	buf
 	))
 
 
 
 (define-minor-mode ph-mode
-  "Toggle global minor Project Helper mode."
-  :lighter " ph"
+  "Toggle global minor Project Helper mode.
+See https://github.com/gromnitsky/ph for the help.
+
+\\{ph-mode-map}
+\\[ph-project-open]      Open a .ph file.
+\\[ph-project-which]     Shows project name for current buffer.
+\\[ph-project-new]       Create a new (sub)project in some directory.
+\\[ph-project-switch]    Switch to a root of another project."
+  :lighter (:eval (ph-modeline))
+  :keymap '(([M-f3] . ph-project-switch-buffer)
+			([s-f3] . ph-project-switch-buffer-other-project)
+			([M-f8] . ph-project-close))
   :global t
   (if ph-mode
 	  (progn
@@ -281,5 +314,49 @@ Return selected project name."
 	(remove-hook 'dired-after-readin-hook 'ph-dired-after-readin-hook)
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	))
+
+(defun ph-modeline ()
+  (if (ph-buffer-pobj-get)
+	  " ph"
+	""))
+
+(defun ph-menu-generate (unused)
+  (cl-block nil
+	(let (menu name db)
+	  ;; static portion
+	  (setq menu
+			'(["New" ph-project-new]
+			  ["Open" ph-project-open]
+			  ["Close Current" ph-project-close]
+			  ["Show Current Name" ph-project-which]))
+
+	  (if (= 0 (ph-vl-size)) (cl-return menu))
+
+	  ;; dynamic portion
+	  (setq menu (append menu '("----")))
+	  (ph-vl-each (lambda (idx)
+					(setq name (ph-venture-name idx))
+					(setq db (ph-ven-db idx))
+					(setq menu (append
+								menu
+								(list `(
+									   ,name
+									   ["Switch To"
+										(lambda ()
+										  (interactive)
+										  (ph-project-dired-open ,name))]
+									   ["Close"
+										(lambda ()
+										  (interactive)
+										  (ph-project-close-by-db ,db))]
+									   ))))
+					))
+;	  (print menu)
+	  menu
+	  )))
+
+(easy-menu-define ph-menu-5705f1cee356eb1f ph-mode-map
+  "Menu used when ph-mode minor mode is active."
+  '("Ph" :filter ph-menu-generate))
 
 (provide 'ph)
