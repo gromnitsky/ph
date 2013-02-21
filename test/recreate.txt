@@ -1,3 +1,0 @@
-data/a/.git/keep_me
-data/b/.git/keep_me
-data/level-1/.git/keep_me

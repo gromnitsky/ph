@@ -1,10 +1,11 @@
 # Emacs Project Helper
 
+ph is a global minor mode for easy opening/closing/switching groups of
+related files (commonly called "projects").
+
 FIXME: a brave link to youtube
 
 * For general design see `doc/structure.org`.
-* For HOWTO see the screencast. (Sorry for ruglish & awful accent,
-  though).
 * For advices, critics, bugs et al, please fill Issues on Github.
 
 ## Why It's Cool
@@ -15,6 +16,8 @@ FIXME: a brave link to youtube
 * Any number of opened projects simultaneously
 * Auto-remembering/-forgetting what file belongs to a project
 * Open/close project files with 1 command.
+
+FIXME: explain more
 
 ## Installation
 
@@ -33,43 +36,43 @@ in the tarball directory.
 
 ## Quick Start
 
-`M-x` ph-project-new
+> `M-x` ph-project-new
 
 And choose some directory with your pet project files. (It's better to
 close those files in emacs at first, but don't worry it's just for the
 1st time & never again.)
 
-`C-x f` some-file-in-the-chosen-directory
-`C-x f` another-file-in-the-chosen-directory
-`C-x f` and-another-file-in-the-chosen-directory
+> `C-x-f` some-file-in-the-chosen-directory<br>
+> `C-x-f` another-file-in-the-chosen-directory<br>
+> `C-x-f` and-another-file-in-the-chosen-directory<br>
 
-`M-x` ph-project-switch-buffer
+> `M-x` ph-project-switch-buffer
 
 Nice, right?
 
-`M-x` ph-project-new
+> `M-x` ph-project-new
 
 And choose some other directory with your other pet project files.
 
-`M-x` ph-project-switch
+> `M-x` ph-project-switch
 
 Nice, right?
 
 Then
 
-`M-x` ph-project-close
+> `M-x` ph-project-close
 
 Yay! Then switch to previous project:
 
-`M-x` ph-project-switch
+> `M-x` ph-project-switch
 
 And
 
-`M-x` ph-project-close
+> `M-x` ph-project-close
 
-Finally, to blow your mind:
+Finally,
 
-`M-x` ph-project-open
+> `M-x` ph-project-open
 
 And choose .ph file location. OMG! It's so cool!
 
