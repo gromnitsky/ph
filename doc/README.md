@@ -6,7 +6,7 @@ related files (commonly called "projects").
 FIXME: a brave link to youtube
 
 * For general design see `doc/structure.org`.
-* For advices, critics, bugs et al, please fill Issues on Github.
+* For advices, critics, bugs et al, fill Issues on Github.
 
 ## Why It's Cool
 
@@ -16,6 +16,8 @@ FIXME: a brave link to youtube
 * Any number of opened projects simultaneously
 * Auto-remembering/-forgetting what file belongs to a project
 * Open/close project files with 1 command.
+* Doesn't touch your Emacs configs & doesn't write anywhere except 1
+  special file in project directory.
 
 FIXME: explain more
 
@@ -62,7 +64,7 @@ Then
 
 > `M-x` ph-project-close
 
-Yay! Then switch to previous project:
+Yay! Then switch to the previous project:
 
 > `M-x` ph-project-switch
 
@@ -74,7 +76,7 @@ Finally,
 
 > `M-x` ph-project-open
 
-And choose .ph file location. OMG! It's so cool!
+And choose .ph file location.
 
 ## Requirements
 
@@ -85,6 +87,15 @@ And choose .ph file location. OMG! It's so cool!
 Tested only under Fedora 17 and Emacs 24.3.50.1 (2013-02-08) from trunk.
 
 Probably won't work under Windows at all. No idea about OSX.
+
+## Tips
+
+* Add `.ph` files to `.gitignore`. There is not much value to have them
+  in git repos--they are updated whenever you open/close a new
+  file. Also there is no useful metadata in them.
+
+* Use `ph-project-switch-buffer-other-project` command (by default bound
+  to `S-F3`) to quickly switch to some opened file in another project.
 
 ## Licence
 

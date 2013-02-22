@@ -9,6 +9,10 @@ other file in the directory belongs to the project. User may think that
 the directory is the project itself & .ph file is just a file that emacs
 need to keep track of project files.
 
+If user opens a file within the project directory ph record that in .ph
+file. If user kill buffer with that file, ph removes it from the
+database.
+
 Child directories (dired buffers) cannot be recorded in .ph file, but
 they are automatically marked as project belongings if user opens them,
 so when closing the project they will be closed too.
@@ -30,6 +34,10 @@ they completely independent from each other. It's not possible to have a
 file that belongs to 2 projects. (Symlinks? FIXME)
 
 * Lisp
+
+ph is a global minor mode. For saving/removing data in .ph file we use
+find-file-hook & kill-buffer-hook.
+
 ** Project
 
 Object that represent project in memory ('ven' is from venture):
@@ -60,10 +68,19 @@ It's persistent across toggling ph-mode but vanishes on emacs exit.
 
 ** Project actions
 
-All user-level commands are in ph-project-* functions.
+All user-level commands are in interactive ph-project-* functions.
 
 Its prohibited to parse or modify db file or corresponding cell in ph-vl
-list. Use only ph-venture-* functions for that.
+list. Use only ph-venture-* & ph-vl-* functions for that.
+
+** Project Buffers
+
+On opening a file, ph checks if its (sub) directory has a .ph database
+file & if is, it marks the buffer as such that belongs to the
+project. The same goes for dired buffers.
+
+A "mark" is just a buffer local variable ph-buffer-pobj that points to
+a cell in global ph-vl list.
 
 * BUGS
 
