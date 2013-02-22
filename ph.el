@@ -1,9 +1,11 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'cl-lib)
-(require 'ido)
 
 (require 'ph-venture)
+
+;; shut up the compiler
+(defvar ph-buffer-pobj)
 
 
 
@@ -25,7 +27,7 @@
   (cl-block nil
 	(if (or (not buffer-file-name)
 			(not (ph-buffer-pobj-get)))
-			(cl-return))
+		(cl-return))
 
 	(let (pobj file)
 	  (setq pobj (ph-buffer-pobj-get))
@@ -118,7 +120,7 @@ Return nil on error."
 ;; 0) Parses FILE.
 ;; 1) Adds the project to ph-vl list.
 ;; 2) For each file in a project a) opens it, b) points buffer local
-;;    variable to the project object.
+;;	  variable to the project object.
 (defun ph-project-open (file)
   "Return a number of opened files or nil on error."
   (interactive "fOpen .ph file: ")
@@ -140,7 +142,7 @@ Return nil on error."
 	  (remove-hook 'find-file-hook 'ph-find-file-hook)
 	  (unwind-protect
 		  (ph-venture-opfl-each pobj
-								(lambda (key val)
+								(lambda (key _val)
 								  (setq pfile (ph-venture-opfl-absolute pobj key))
 								  (if (file-readable-p pfile)
 									  (condition-case err
@@ -149,8 +151,8 @@ Return nil on error."
 											(cl-incf openedFiles))
 										(error
 										 (ph-venture-opfl-rm pobj key)
-										 (ph-warn 0 "find-file failed: %s"
-												  (error-message-string err))))
+										 (ph-warn 0 (format "find-file failed: %s"
+												  (error-message-string err)))))
 									(ph-venture-opfl-rm pobj key))
 
 								  (cd saveDir)))
@@ -172,10 +174,10 @@ Return nil on error."
   "Close all currently opened project files. Return t on success."
   (interactive)
   (cl-block nil
-  (when (and (not (ph-ven-p pobj))
-			 (not (setq pobj (ph-buffer-pobj-get))))
-	(ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
-	(cl-return nil))
+	(when (and (not (ph-ven-p pobj))
+			   (not (setq pobj (ph-buffer-pobj-get))))
+	  (ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
+	  (cl-return nil))
 
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
 	;; kill buffers in usual emacs fashion, some buffers may be unsaved
@@ -204,21 +206,21 @@ project & clean its db from subproject files."
 		  (error "There is already a project in %s" dir))
 
 	  (when (setq parDb (ph-db-find-subproject dir))
-		  (if (not (y-or-n-p (format "Directory %s is alredy under project %s. \
+		(if (not (y-or-n-p (format "Directory %s is alredy under project %s. \
 Make a sub-project?" dir parDb)))
-			  (cl-return nil)
-			;; Close a sub project & fix its db.  Of cource it's better
-			;; to "transfer" opfl subproject's files to a new project
-			;; in real time, but that's too much work & emacs is an old fart.
-			(when (not (setq parObj (ph-project-parse parDb)))
-			  (error "Parsing sub-project %s failed. \
+			(cl-return nil)
+		  ;; Close a sub project & fix its db.	Of cource it's better
+		  ;; to "transfer" opfl subproject's files to a new project
+		  ;; in real time, but that's too much work & emacs is an old fart.
+		  (when (not (setq parObj (ph-project-parse parDb)))
+			(error "Parsing sub-project %s failed. \
 New project was NOT created" parDb))
-			(ph-project-close parObj)
-			(ph-venture-clean parObj (ph-file-relative dir (ph-dirname parDb)))
-			(when (not (ph-venture-marshalling parObj))
-			  (error "Updating sub-project %s failed. \
+		  (ph-project-close parObj)
+		  (ph-venture-clean parObj (ph-file-relative dir (ph-dirname parDb)))
+		  (when (not (ph-venture-marshalling parObj))
+			(error "Updating sub-project %s failed. \
 New project was NOT created" parDb))
-			))
+		  ))
 	  (if (not (file-directory-p dir)) (mkdir dir t))
 
 	  (setq pobj (ph-venture-new db))
@@ -297,13 +299,13 @@ See https://github.com/gromnitsky/ph for the help.
 
 \\{ph-mode-map}
 \\[ph-project-open]      Open a .ph file.
+\\[ph-project-close]     Close opened project files.
 \\[ph-project-which]     Shows project name for current buffer.
 \\[ph-project-new]       Create a new (sub)project in some directory.
 \\[ph-project-switch]    Switch to a root of another project."
   :lighter (:eval (ph-modeline))
   :keymap '(([M-f3] . ph-project-switch-buffer)
-			([s-f3] . ph-project-switch-buffer-other-project)
-			([M-f8] . ph-project-close))
+			([s-f3] . ph-project-switch-buffer-other-project))
   :global t
   (if ph-mode
 	  (progn
@@ -320,7 +322,7 @@ See https://github.com/gromnitsky/ph for the help.
 	  " ph"
 	""))
 
-(defun ph-menu-generate (unused)
+(defun ph-menu-generate (_dummy)
   (cl-block nil
 	(let (menu name db)
 	  ;; static portion
@@ -340,18 +342,18 @@ See https://github.com/gromnitsky/ph for the help.
 					(setq menu (append
 								menu
 								(list `(
-									   ,name
-									   ["Switch To"
-										(lambda ()
-										  (interactive)
-										  (ph-project-dired-open ,name))]
-									   ["Close"
-										(lambda ()
-										  (interactive)
-										  (ph-project-close-by-db ,db))]
-									   ))))
+										,name
+										["Switch To"
+										 (lambda ()
+										   (interactive)
+										   (ph-project-dired-open ,name))]
+										["Close"
+										 (lambda ()
+										   (interactive)
+										   (ph-project-close-by-db ,db))]
+										))))
 					))
-;	  (print menu)
+	  ;; (print menu)
 	  menu
 	  )))
 

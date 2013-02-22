@@ -16,7 +16,7 @@
   db
   (version ph-meta-version)
   (opfl (make-hash-table :test 'equal))
-)
+  )
 
 
 
@@ -144,10 +144,10 @@ Return nil on error or list of removed files."
 	(if (or (not pobj) (not dir)) (cl-return nil))
 
 	(let ((waste '()))
-	  (ph-venture-opfl-each pobj (lambda (key val)
+	  (ph-venture-opfl-each pobj (lambda (key _val)
 								   (when (string-prefix-p dir key)
 									 (push key waste)
-								   	 )))
+									 )))
 
 	  (cl-loop for idx in waste do (ph-venture-opfl-rm pobj idx))
 	  waste
@@ -220,7 +220,7 @@ Return a pointer to a cell in ph-vl list or nil on error."
   "Return a list of currently opened project names or nil"
   (let ((names '()))
 	(ph-vl-each (lambda (idx)
-				(push (ph-venture-name idx) names)))
+				  (push (ph-venture-name idx) names)))
 	names
 	))
 
@@ -259,7 +259,7 @@ If DIR is a file, detection will not work."
 			   (not (equal (expand-file-name dir) default-directory)))
 		  spdb
 		nil)
-	)))
+	  )))
 
 
 
