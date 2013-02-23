@@ -80,22 +80,28 @@ And choose .ph file location.
 
 ## Requirements
 
+### Running
+
 * Linux/BSD
 * Emacs 24.3
-* GNU Make
 
 Tested only under Fedora 17 and Emacs 24.3.50.1 (2013-02-08) from trunk.
-
 Probably won't work under Windows at all. No idea about OSX.
+
+### Building
+
+* GNU Make
+* GNU Tar
+* jsontool (`npm install -g jsontool`)
 
 ## Tips
 
-* Add `.ph` files to `.gitignore`. There is not much value to have them
-  in git repos--they are updated whenever you open/close a new
-  file. Also there is no useful metadata in them.
-
 * Use `ph-project-switch-buffer-other-project` command (by default bound
   to `S-F3`) to quickly switch to some opened file in another project.
+
+* Add `.ph` files to `.gitignore`. I don't see a point of having them in
+  git repos. `.ph` files are updated whenever you open/close a new file
+  & there is no useful metadata in them.
 
 ## Licence
 

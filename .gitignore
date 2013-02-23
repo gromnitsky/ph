@@ -1,4 +1,6 @@
 *.elc
 tmp
 *.tar
+.ph
+
 
