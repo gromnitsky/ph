@@ -8,7 +8,7 @@ FIXME: a brave link to youtube
 * For general design see `doc/structure.org`.
 * For advices, critics, bugs et al, fill Issues on Github.
 
-## Why It's Cool
+## Features
 
 * Nothing to configure
 * Support any types of projects & any files.

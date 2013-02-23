@@ -2,8 +2,7 @@
 
 (require 'cl-lib)
 
-(defconst ph-meta-name "ph")
-(defconst ph-meta-version "0.0.1")
+(require 'ph-meta)
 
 (defvar ph-verbose 2 "Verbosity level")
 

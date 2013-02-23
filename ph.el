@@ -297,6 +297,7 @@ Return selected buffer."
 
 
 
+;;;###autoload
 (define-minor-mode ph-mode
   "Toggle global minor Project Helper mode.
 See https://github.com/gromnitsky/ph for the help.

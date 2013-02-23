@@ -1,0 +1,13 @@
+:; exec emacs -Q --script "$0" -- "$@" # -*- mode: emacs-lisp; lexical-binding: t -*-
+
+(setq
+ debug-on-error t						; show stack stace
+ argv (cdr argv))						; remove '--' from CL arguments
+
+(push (concat (file-name-directory load-file-name) "/..") load-path)
+(require 'ph-meta)
+
+(with-temp-file
+	"ph-pkg.el"
+  (insert (prin1-to-string
+		   (list 'define-package ph-meta-name ph-meta-version ph-meta-desc))))
