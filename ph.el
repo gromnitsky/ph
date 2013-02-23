@@ -131,7 +131,7 @@ Return nil on error."
   (cl-block nil
 	(if (or (not file) (not (stringp file))) (cl-return nil))
 
-	(let ((openedFiles 0) (wasFiles 0)
+	(let ((openedFiles 0)
 		  pobj pfile saveDir cell)
 	  (when (not (setq pobj (ph-venture-unmarshalling file)))
 		(ph-warn 0 (format "cannot parse project %s" file))
@@ -140,7 +140,6 @@ Return nil on error."
 		(ph-warn 1 (format "project %s is already loaded in emacs" file))
 		(cl-return nil))
 
-	  (setq wasFiles (ph-venture-opfl-size pobj))
 	  (setq saveDir default-directory)
 	  (setq cell (ph-vl-add pobj))
 	  (remove-hook 'find-file-hook 'ph-find-file-hook)
@@ -164,9 +163,9 @@ Return nil on error."
 		(add-hook 'find-file-hook 'ph-find-file-hook))
 
 	  ;; sync db with memory objects
-	  (if (/= openedFiles wasFiles)
-		  (ph-venture-marshalling pobj))
+	  (ph-venture-marshalling pobj)
 
+	  (ph-project-dired-open (ph-venture-name pobj))
 	  openedFiles)))
 
 (defun ph-project-close-by-db (db)
@@ -254,7 +253,8 @@ Return a buffer name if switch was done."
 	  (setq flist (append flist (list (buffer-name idx))))) ; elisp is boring
 
 	(when (setq buf (ido-completing-read "ph: " flist))
-	  (switch-to-buffer buf))
+	  (switch-to-buffer buf)
+	  (bury-buffer buf))
 
 	buf
 	))

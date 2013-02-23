@@ -103,6 +103,16 @@ Probably won't work under Windows at all. No idea about OSX.
   git repos. `.ph` files are updated whenever you open/close a new file
   & there is no useful metadata in them.
 
+## BUGS
+
+* Doesn't work with auto-revert-mode (autorevert.el).
+* Start emacs (opened projects == 0), open a file in some project
+  directory. Then `ph-project-open` *that* project. If the file wasn't
+  in the db it wouldn't be recorded until user kills it and opens again
+  *when* the project is open. PFX (Possible Future Fix): in
+  `ph-project-open` kill already opened buffers that may belong to the
+  project.
+
 ## Licence
 
 MIT.

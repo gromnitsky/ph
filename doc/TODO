@@ -1,18 +1,7 @@
 -*-org-*-
 
-* TODO 0.0.1 [11/13]
+* TODO 0.0.1 [0/3]
 
-- [X] ph-project-new
-- [X] ph-project-open
-  - [X] unwind-protect
-- [X] ph-project-close
-  - [X] unwind-protect
-- [X] ph-project-which
-- [X] ph-project-switch-buffer
-- [X] ph-project-switch
-- [X] ph-find-file-hook
-- [X] ph-kill-buffer-hook
-- [X] menu
-- [X] show ' ph' in modeline for 'tracked' files only
-- [X] add ph-buffer-pobj to dired buffers
-- [ ] recursive check for subproject
+- [ ] recursive check for subprojects
+- [ ] make ph-kill-buffer-hook buffer local?
+- [ ] progress-reporter for ph-project-open & ph-project-close

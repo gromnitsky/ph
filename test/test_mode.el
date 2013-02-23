@@ -17,21 +17,24 @@
 
   (let (bf-a bf-b bf-c)
 	(ph-project-open "a/.ph")
+	(cd tdd-work-dir)
 	(ph-project-open "b/.ph")
+	(cd tdd-work-dir)
 	(ph-project-open "level-1/.ph")
+	(cd tdd-work-dir)
 
 	(should (setq bf-a (ph-buffer-list (ph-vl-find "a/.ph"))))
 	(should (setq bf-b (ph-buffer-list (ph-vl-find "b/.ph"))))
 	(should (setq bf-c (ph-buffer-list (ph-vl-find "level-1/.ph"))))
 
-	(should (equal 2 (length bf-a)))
-	(should (equal 2 (length bf-b)))
-	(should (equal 4 (length bf-c)))
+	(should (equal 3 (length bf-a)))
+	(should (equal 3 (length bf-b)))
+	(should (equal 5 (length bf-c)))
 
 	(ph-project-new "1/2/3")
 	(should-not (ph-buffer-list (ph-vl-find "1/2/3/.ph")))
 
-	(should (equal 2 (length bf-a)))
+	(should (equal 3 (length bf-a)))
 
 	;; cleanup
 	(ph-project-close (ph-vl-find "a/.ph"))
@@ -44,7 +47,9 @@
 (ert-deftest ph-buffer-pobj-get()
   (ph-mode nil)
   (should-not (ph-buffer-pobj-get))
+
   (ph-project-open "a/.ph")
+  (cd tdd-work-dir)
   (should (equal (expand-file-name "a/.ph")
 				 (ph-ven-db (ph-buffer-pobj-get))))
 
@@ -62,6 +67,7 @@
   (let (openedFiles pobj)
 	;; a
 	(setq openedFiles (ph-project-open "a/.ph"))
+	(cd tdd-work-dir)
 	(should (equal 2 openedFiles))
 	(should (equal 1 (ph-vl-size)))
 
@@ -76,6 +82,7 @@
 
 	;; b
 	(setq openedFiles (ph-project-open "b/.ph"))
+	(cd tdd-work-dir)
 	(should (equal 2 openedFiles))
 	(should (equal 2 (ph-vl-size)))
 
@@ -96,16 +103,18 @@
 
   ;; open 2 projects
   (should (ph-project-open "a/.ph"))
+  (cd tdd-work-dir)
   (should (ph-project-open "b/.ph"))
+  (cd tdd-work-dir)
   (should (equal 2 (ph-vl-size)))
-  (should (equal 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
-  (should (equal 2 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
+  (should (equal 3 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+  (should (equal 3 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
 
   ;; close project a
   (should (ph-project-close (ph-vl-find "a/.ph")))
   (should (equal 1 (ph-vl-size)))
   (should (equal 0 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
-  (should (equal 2 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
+  (should (equal 3 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
 
   ;; close project b
   (should (ph-project-close (ph-vl-find "b/.ph")))
@@ -138,6 +147,7 @@
   (ph-mode nil)
   ;; open 1st project
   (should (= 4 (ph-project-open "level-1/.ph")))
+  (cd tdd-work-dir)
   (should (equal 1 (ph-vl-size)))
 
   (let (db2)
@@ -193,6 +203,7 @@
   (should-not (ph-project-which))
 
   (ph-project-open "a/.ph")
+  (cd tdd-work-dir)
   (should (equal (expand-file-name "a/.ph") (ph-project-which)))
 
   (ph-project-close "a/.ph")
@@ -204,7 +215,7 @@
 							choices
 							&optional predicate require-match
 							initial-input hist def inherit-input-method)
-  (car (last choices)))
+  (car choices))
 
 (ert-deftest ph-project-switch-buffer()
   (ph-mode nil)
@@ -214,10 +225,11 @@
   (let (lst)
 	(ph-project-open "level-1/.ph")
 
-	;; last list element must be 1st after ph-project-switch-buffer
-	(setq lst (car (last (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+	;; 1st element in project buffer list must after
+	;; ph-project-switch-buffer be the last
+	(setq buried (car (ph-buffer-list (ph-vl-find "level-1/.ph"))))
 	(should (ph-project-switch-buffer))
-	(should (equal lst (car (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+	(should (equal buried (car (last (ph-buffer-list (ph-vl-find "level-1/.ph"))))))
 
 	(ph-project-close (ph-vl-find "level-1/.ph"))
 	(tdd-setup-global)
@@ -231,9 +243,9 @@
   (ph-project-open "b/.ph")
   (ph-project-open "level-1/.ph")
 
-  (should (equal "level-1" (ph-project-switch)))
+  (should (equal "a" (ph-project-switch)))
   (should (equal 'dired-mode
-				 (buffer-local-value 'major-mode (get-buffer "level-1"))))
+				 (buffer-local-value 'major-mode (get-buffer "a"))))
 
   (cd tdd-work-dir)
   (ph-project-close (ph-vl-find "a/.ph"))
@@ -255,6 +267,7 @@
 
   (cd tdd-work-dir)
   (should (equal 2 (ph-project-open "b/.ph")))
+  (cd tdd-work-dir)
   (should (equal 1 (ph-vl-size)))
   (should (equal 2 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
 
@@ -287,6 +300,7 @@
 
   ;; project a
   (should (equal 2 (ph-project-open "a/.ph")))
+  (cd tdd-work-dir)
   (should (equal 1 (ph-vl-size)))
   (should (equal 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
 
@@ -307,6 +321,7 @@
 
   ;; project a
   (should (equal 2 (ph-project-open "a/.ph")))
+  (cd tdd-work-dir)
   (should (equal 1 (ph-vl-size)))
   (should (equal 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
 

@@ -42,11 +42,11 @@ find-file-hook & kill-buffer-hook.
 
 Object that represent project in memory ('ven' is from venture):
 
-(cl-defstruct ph-ven
-  db
-  version
-  opfl
-)
+: (cl-defstruct ph-ven
+:   db
+:   version
+:   opfl
+: )
 
 Its serialised version is a '.ph' file. ph-ven contains its absolute
 path (db). opfl is a hash of currently opened project files in
@@ -81,14 +81,3 @@ project. The same goes for dired buffers.
 
 A "mark" is just a buffer local variable ph-buffer-pobj that points to
 a cell in global ph-vl list.
-
-* BUGS
-
-1. Start emacs (opened projects == 0), open a file in some project
-   directory. Then ph-project-open THAT project.
-
-   If the file wasn't in db it would not be recorded until user kills it
-   and opens again WHEN the project is open.
-
-   PFX (Possible Future Fix): in ph-project-open kill already opened
-   buffers that may belong to the project.
