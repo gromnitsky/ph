@@ -62,8 +62,12 @@
 	  (buffer-local-value 'ph-buffer-pobj buf)))
 
 (defun ph-buffer-pobj-set (pobj)
-  (if (ph-ven-p pobj)
-	  (setq-local ph-buffer-pobj pobj)
+  "Set in current buffer a local variable that 'marks' the buffer
+as POBJ belonging. We make it permanent-local to survive through
+major mode changes."
+  (when (ph-ven-p pobj)
+	(setq-local ph-buffer-pobj pobj)
+	(put 'ph-buffer-pobj 'permanent-local t)
 	))
 
 (defun ph-buffer-pobj-unset ()
