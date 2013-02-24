@@ -224,12 +224,13 @@
 
   (let (lst)
 	(ph-project-open "level-1/.ph")
+	(cd tdd-work-dir)
 
-	;; 1st element in project buffer list must after
-	;; ph-project-switch-buffer be the last
+	;; 1st element in project buffer list must be 2nd
+	;; after ph-project-switch-buffer
 	(setq buried (car (ph-buffer-list (ph-vl-find "level-1/.ph"))))
 	(should (ph-project-switch-buffer))
-	(should (equal buried (car (last (ph-buffer-list (ph-vl-find "level-1/.ph"))))))
+	(should (equal buried (nth 1 (ph-buffer-list (ph-vl-find "level-1/.ph")))))
 
 	(ph-project-close (ph-vl-find "level-1/.ph"))
 	(tdd-setup-global)

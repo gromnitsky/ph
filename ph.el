@@ -249,14 +249,20 @@ Return a buffer name if switch was done."
 		(error "Project %s doesn't have opened files yet" (ph-ven-db pobj)))
 
 	;; create a list of POBJ emacs buffer names (not file names)
+	;; skipping current buffer
 	(dolist (idx bf)
-	  (setq flist (append flist (list (buffer-name idx))))) ; elisp is boring
+	  (unless (equal idx (current-buffer))
+		(setq flist (append flist (list (buffer-name idx)))))) ; elisp is boring
 
-	(when (setq buf (ido-completing-read "ph: " flist))
-	  (switch-to-buffer buf)
-	  (bury-buffer buf))
+	(if (= 0 (length flist))
+		(progn
+		  (ph-warn 0 (format "%s is the only 1 opened in this project"
+							 (current-buffer)))
+		  (current-buffer))
+	  (when (setq buf (ido-completing-read "ph: " flist))
+		(switch-to-buffer buf))
 
-	buf
+	  buf)
 	))
 
 (defun ph-project-dired-open (name)
