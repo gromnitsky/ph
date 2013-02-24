@@ -132,7 +132,7 @@ Return nil on error."
 	(if (or (not file) (not (stringp file))) (cl-return nil))
 
 	(let ((openedFiles 0)
-		  pobj pfile saveDir cell)
+		  pobj pfile cell)
 	  (when (not (setq pobj (ph-venture-unmarshalling file)))
 		(ph-warn 0 (format "cannot parse project %s" file))
 		(cl-return nil))
@@ -140,7 +140,6 @@ Return nil on error."
 		(ph-warn 1 (format "project %s is already loaded in emacs" file))
 		(cl-return nil))
 
-	  (setq saveDir default-directory)
 	  (setq cell (ph-vl-add pobj))
 	  (remove-hook 'find-file-hook 'ph-find-file-hook)
 	  (unwind-protect
@@ -158,7 +157,7 @@ Return nil on error."
 												  (error-message-string err)))))
 									(ph-venture-opfl-rm pobj key))
 
-								  (cd saveDir)))
+								  ))
 		;; always restore the hook
 		(add-hook 'find-file-hook 'ph-find-file-hook))
 

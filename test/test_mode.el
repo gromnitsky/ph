@@ -230,6 +230,7 @@
 	;; after ph-project-switch-buffer
 	(setq buried (car (ph-buffer-list (ph-vl-find "level-1/.ph"))))
 	(should (ph-project-switch-buffer))
+	(cd tdd-work-dir)
 	(should (equal buried (nth 1 (ph-buffer-list (ph-vl-find "level-1/.ph")))))
 
 	(ph-project-close (ph-vl-find "level-1/.ph"))

@@ -1,7 +1,8 @@
 -*-org-*-
 
-* TODO 0.0.1 [0/3]
+* TODO Ongoing [0/4]
 
 - [ ] recursive check for subprojects
 - [ ] make ph-kill-buffer-hook buffer local?
 - [ ] progress-reporter for ph-project-open & ph-project-close
+- [ ] use semaphore instead of removing/adding hooks?
