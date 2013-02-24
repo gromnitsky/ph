@@ -1,4 +1,4 @@
-.PHONY: test compile clean package
+.PHONY: test compile clean package packageName
 
 EL := $(wildcard *.el)
 ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
@@ -21,12 +21,14 @@ compile: $(ELC)
 ph-pkg.el: ph-meta.el
 	bin/ph-make-pkg
 
-package: ph-pkg.el
-	pkg_name=`bin/ph-pkg2json $< | $(JSON) -a -d- name version` && \
-		$(TAR) --transform="s,^,$$pkg_name/,S" -cf $$pkg_name.tar \
-			$(EL) README
+packageName: ph-pkg.el
+	$(eval PKG_NAME := $(shell bin/ph-pkg2json $< | $(JSON) -a -d- name version))
 
-clean:
+package: packageName
+	$(TAR) --transform='s,^,$(PKG_NAME)/,S' -cf $(PKG_NAME).tar \
+		$(EL) README
+
+clean: packageName
 	rm -rf $(ELC) $(PKG_NAME).tar
 	$(MAKE) -C test $@
 
