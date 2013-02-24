@@ -261,7 +261,6 @@ Return a buffer name if switch was done."
 		  (current-buffer))
 	  (when (setq buf (ido-completing-read "ph: " flist))
 		(switch-to-buffer buf))
-
 	  buf)
 	))
 
@@ -294,11 +293,9 @@ Return selected project name."
   "Switch to project, then switch to some buffer. Very handy.
 Return selected buffer."
   (interactive)
-  (let (projName buf)
+  (let (projName)
 	(when (setq projName (ph-project-select))
-	  (set buf (ph-project-switch-buffer (ph-vl-find-by-name projName))))
-
-	buf
+	  (ph-project-switch-buffer (ph-vl-find-by-name projName)))
 	))
 
 
