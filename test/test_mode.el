@@ -23,10 +23,11 @@
 (setq revert-without-query (quote (".*")))
 (global-auto-revert-mode)
 
+(ph-mode)
+
 
 
 (ert-deftest ph-buffer-list()
-  (ph-mode nil)
   (should-not (ph-buffer-list nil))
 
   (let (bf-a bf-b bf-c)
@@ -59,13 +60,20 @@
 	))
 
 (ert-deftest ph-buffer-pobj-get()
-  (ph-mode nil)
   (should-not (ph-buffer-pobj-get))
 
   (ph-project-open "a/.ph")
   (cd tdd-work-dir)
   (should (equal (expand-file-name "a/.ph")
 				 (ph-ven-db (ph-buffer-pobj-get))))
+
+  ;; we are in dired buffer
+  (should-not (local-variable-p 'ph-buffer-orig-file-name))
+
+  (should (set-buffer "three.txt"))
+  (should (local-variable-p 'ph-buffer-orig-file-name))
+  (should (equal (buffer-file-name)
+				 (expand-file-name ph-buffer-orig-file-name)))
 
   (ph-project-close (ph-vl-find "a/.ph"))
   (tdd-setup-global)
@@ -74,7 +82,6 @@
 
 
 (ert-deftest ph-project-open()
-  (ph-mode nil)
   (should-not (ph-project-open nil))
   (should-not (ph-project-open "/DOESN'T EXIST"))
 
@@ -112,7 +119,6 @@
 	))
 
 (ert-deftest ph-project-close()
-  (ph-mode nil)
   (should-not (ph-project-close nil))
 
   ;; open 2 projects
@@ -140,7 +146,6 @@
   )
 
 (ert-deftest ph-project-new_simple()
-  (ph-mode nil)
   (should-not (ph-project-new nil))
   (should-error (ph-project-new "a"))	; project already exists
 
@@ -158,7 +163,6 @@
   tdd-y-or-n)
 
 (ert-deftest ph-project-new_subproject()
-  (ph-mode nil)
   ;; open 1st project
   (should (= 4 (ph-project-open "level-1/.ph")))
   (cd tdd-work-dir)
@@ -181,7 +185,6 @@
 	))
 
 (ert-deftest ph-project-new_subproject_2()
-  (ph-mode nil)
   ;; create a project
   (should (ph-project-new "."))
 
@@ -194,7 +197,6 @@
   )
 
 (ert-deftest ph-project-new_subproject_fail()
-  (ph-mode nil)
   (let ((tdd-y-or-n nil))
 	(should-not (ph-project-new "level-1/level-2"))
 	)
@@ -213,7 +215,6 @@
   )
 
 (ert-deftest ph-project-which()
-  (ph-mode nil)
   (should-not (ph-project-which))
 
   (ph-project-open "a/.ph")
@@ -232,7 +233,6 @@
   (car choices))
 
 (ert-deftest ph-project-switch-buffer()
-  (ph-mode nil)
   (should-error (ph-project-switch-buffer nil))
   (should-error (ph-project-switch-buffer))
 
@@ -252,7 +252,6 @@
 	))
 
 (ert-deftest ph-project-switch()
-  (ph-mode t)
   (should-error (ph-project-switch))
 
   (ph-project-open "a/.ph")
@@ -273,8 +272,6 @@
   )
 
 (ert-deftest ph-find-file-hook()
-  (ph-mode t)
-
   (find-file "empty.txt")
   (should (equal 0 (ph-vl-size)))
 
@@ -305,8 +302,6 @@
   )
 
 (ert-deftest ph-kill-file-hook()
-  (ph-mode t)
-
   ;; check non-project file
   (find-file "empty.txt")
   (should (equal 0 (ph-vl-size)))
@@ -333,8 +328,6 @@
   )
 
 (ert-deftest ph-kill-file-hook_permission_denied()
-  (ph-mode t)
-
   ;; project a
   (should (equal 2 (ph-project-open "a/.ph")))
   (cd tdd-work-dir)
@@ -355,8 +348,6 @@
   )
 
 (ert-deftest ph-dired-after-readin-hook()
-  (ph-mode t)
-
   ;; open some dir
   (find-file "/tmp")
   (should-not (local-variable-p 'ph-buffer-pobj (get-buffer "tmp")))
@@ -396,6 +387,49 @@
 ;  (print (buffer-list))
   (tdd-setup-global)
   )
+
+(ert-deftest ph-before-save-hook ()
+  (let (bf-a bf-b bf-c)
+	(ph-project-open "a/.ph")
+	(cd tdd-work-dir)
+	(should (= 3 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+
+	;; move buffer
+	(should (set-buffer "three.txt"))
+	(rename-file "three.txt" "/tmp/NEW-THREE.TXT" t)
+	(set-visited-file-name "/tmp/NEW-THREE.TXT")
+	(basic-save-buffer)
+
+	;; moved buffer must be deleted from ph-vl cell & unmarked
+	(cd tdd-work-dir)
+	(should-not (ph-buffer-pobj-get))
+	(should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+	(should (= 1 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+	;; rename buffer but keep it under project directory
+	(should (set-buffer "two.txt"))
+	(rename-file "two.txt" "../TWO.TXT" t)
+	(set-visited-file-name "../TWO.TXT")
+	(basic-save-buffer)
+
+	(cd tdd-work-dir)
+	(should (ph-buffer-pobj-get))
+	(should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+	(should (= 1 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+	(should (ph-venture-opfl-get (ph-vl-find "a/.ph")
+								 ph-buffer-orig-file-name))
+
+	(delete-file "/tmp/NEW-THREE.TXT")
+	(ph-project-close (ph-vl-find "a/.ph"))
+
+	;; reopen project
+	(ph-project-open "a/.ph")
+	(cd tdd-work-dir)
+	(should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+	(ph-project-close (ph-vl-find "a/.ph"))
+
+	(tdd-setup-global)
+	))
 
 
 

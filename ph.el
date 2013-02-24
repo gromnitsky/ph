@@ -6,6 +6,8 @@
 
 ;; shut up the compiler
 (defvar ph-buffer-pobj)
+(defvar ph-buffer-orig-file-name)
+
 (defvar ph-status-busy nil "A global semaphore for hooks")
 
 
@@ -36,7 +38,7 @@
 	(let (pobj file)
 	  (setq pobj (ph-buffer-pobj-get))
 	  (setq file (ph-file-relative buffer-file-name
-								   (ph-dirname (ph-ven-db pobj))))
+								   (ph-venture-opfl-prefix pobj)))
 
 	  (ph-venture-opfl-rm pobj file)
 	  (unless (ph-venture-marshalling pobj)
@@ -58,6 +60,35 @@ write to db."
 	  (if (setq pobj (ph-vl-find db)) (ph-buffer-pobj-set pobj))
 	  )))
 
+(defun ph-before-save-hook ()
+  "Simple protection from (set-visited-file-name)."
+    (cl-block nil
+	  (let (pobj prefix)
+		(if (or
+			 (not buffer-file-name)
+			 (not (setq pobj (ph-buffer-pobj-get))))
+			(cl-return))
+
+		(setq prefix (ph-dirname buffer-file-name))
+		(when (not (equal prefix (ph-venture-opfl-prefix pobj)))
+		  ;; user has pointed the buffer to some file that is NOT in a
+		  ;; project directory
+		  (ph-venture-opfl-rm pobj ph-buffer-orig-file-name)
+		  (ph-buffer-pobj-unset)
+		  (cl-return))
+
+		(when (not (equal buffer-file-name
+						  (ph-venture-opfl-absolute
+						   pobj ph-buffer-orig-file-name)))
+		  ;; buffer was moved in boundaries of the project directory
+		  (ph-venture-opfl-rm pobj ph-buffer-orig-file-name)
+		  (setq ph-buffer-orig-file-name (ph-file-relative
+										  buffer-file-name
+										  (ph-venture-opfl-prefix pobj)))
+		  (ph-venture-opfl-add pobj ph-buffer-orig-file-name)
+		  (ph-venture-marshalling pobj)
+		  ))))
+
 
 
 (defun ph-buffer-pobj-get (&optional buf)
@@ -74,11 +105,18 @@ major mode changes."
   (when (ph-ven-p pobj)
 	(setq-local ph-buffer-pobj pobj)
 	(put 'ph-buffer-pobj 'permanent-local t)
-	))
+
+	(when buffer-file-name
+	  (setq-local ph-buffer-orig-file-name
+				  (ph-file-relative buffer-file-name (ph-venture-opfl-prefix pobj)))
+	  (put 'ph-buffer-orig-file-name 'permanent-local t)
+	  )))
 
 (defun ph-buffer-pobj-unset ()
   (ignore-errors
-	(makunbound ph-buffer-pobj)))
+	(kill-local-variable 'ph-buffer-pobj)
+	(kill-local-variable 'ph-buffer-orig-file-name)
+	))
 
 (defun ph-buffer-list (pobj)
   "Iterate through buffer-list & return only POBJ buffers."
@@ -339,10 +377,12 @@ See https://github.com/gromnitsky/ph for the help.
 	  (progn
 		(add-hook 'find-file-hook 'ph-find-file-hook)
 		(add-hook 'dired-after-readin-hook 'ph-dired-after-readin-hook)
-		(add-hook 'kill-buffer-hook 'ph-kill-buffer-hook))
+		(add-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
+		(add-hook 'before-save-hook 'ph-before-save-hook))
 	(remove-hook 'find-file-hook 'ph-find-file-hook)
 	(remove-hook 'dired-after-readin-hook 'ph-dired-after-readin-hook)
 	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
+	(remove-hook 'before-save-hook 'ph-before-save-hook)
 	))
 
 (defun ph-modeline ()
