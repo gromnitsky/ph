@@ -4,7 +4,7 @@
 
 ** Sure
 
-- [ ] progress-reporter for ph-project-open & ph-project-close
+- [X] progress-reporter for ph-project-open & ph-project-close
 - [ ] inject to before-save-hook to mitigate (set-visited-file-name) damage
 
 ** Unsure

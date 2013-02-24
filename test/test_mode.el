@@ -9,6 +9,20 @@
 
 (setq ph-verbose -1)
 
+;; make reporters silent
+(defun make-progress-reporter (message &optional min-value max-value
+									   current-value min-change min-time)
+  )
+(defun progress-reporter-update (reporter &optional value)
+  )
+(defun progress-reporter-done (reporter)
+  )
+
+;; if tests runs only without those 2 lines, we have bugs in
+;; ph-project-open or ph-project-close
+(setq revert-without-query (quote (".*")))
+(global-auto-revert-mode)
+
 
 
 (ert-deftest ph-buffer-list()

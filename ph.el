@@ -138,8 +138,8 @@ Return nil on error."
 	(if (or ph-status-busy
 			(not file)) (cl-return nil))
 
-	(let ((openedFiles 0)
-		  pobj pfile cell)
+	(let ((openedFiles 0) (nFile 0)
+		  report pobj pfile cell)
 	  (when (not (setq pobj (ph-venture-unmarshalling file)))
 		(ph-warn 0 (format "cannot parse project %s" file))
 		(cl-return nil))
@@ -148,6 +148,8 @@ Return nil on error."
 		(cl-return nil))
 
 	  (setq cell (ph-vl-add pobj))
+	  (setq report (make-progress-reporter
+					(format "Opening %s... " file) 0 (ph-venture-opfl-size pobj)))
 	  (setq ph-status-busy t)
 	  (unwind-protect
 		  (ph-venture-opfl-each pobj
@@ -164,9 +166,11 @@ Return nil on error."
 												  (error-message-string err)))))
 									(ph-venture-opfl-rm pobj key))
 
+								  (progress-reporter-update report (cl-incf nFile))
 								  ))
 		;; always make sure that hooks are working again
-		(setq ph-status-busy nil))
+		(setq ph-status-busy nil)
+		(progress-reporter-done report))
 
 	  ;; sync db with memory objects
 	  (ph-venture-marshalling pobj)
@@ -189,15 +193,22 @@ Return nil on error."
 	  (ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
 	  (cl-return nil))
 
-	(setq ph-status-busy t)
-	;; kill buffers in usual emacs fashion, some buffers may be unsaved
-	;; & user can press C-g thus killing only a subset of buffers
-	(unwind-protect
-		(dolist (idx (ph-buffer-list pobj))
-		  (with-demoted-errors
-			(if idx (kill-buffer idx))))
-	  ;; always make sure that hooks are working again
-	  (setq ph-status-busy nil))
+	(let* ((buflist (ph-buffer-list pobj))
+		   (report (make-progress-reporter
+					(format "Closing %s... " (ph-ven-db pobj)) 0 (length buflist)))
+		   (nFile 0))
+
+	  (setq ph-status-busy t)
+	  ;; kill buffers in usual emacs fashion, some buffers may be unsaved
+	  ;; & user can press C-g thus killing only a subset of buffers
+	  (unwind-protect
+		  (dolist (idx buflist)
+			(with-demoted-errors
+			  (if idx (kill-buffer idx)))
+			(progress-reporter-update report (cl-incf nFile)))
+		;; always make sure that hooks are working again
+		(setq ph-status-busy nil)
+		(progress-reporter-done report)))
 
 	;; remove project from ph-vl if user didn't hit C-g
 	(ph-vl-rm (ph-ven-db pobj))
