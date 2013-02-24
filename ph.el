@@ -6,14 +6,17 @@
 
 ;; shut up the compiler
 (defvar ph-buffer-pobj)
+(defvar ph-status-busy nil "A global semaphore for hooks")
 
 
 
 (defun ph-find-file-hook()
   (cl-block nil
 	(let (db pobj file)
-	  (if (not buffer-file-name) (cl-return))
-	  (unless (setq db (ph-db-find buffer-file-name)) (cl-return nil))
+	  (if (or ph-status-busy
+			  (not buffer-file-name)
+			  (not (setq db (ph-db-find buffer-file-name))))
+		  (cl-return))
 
 	  (when (setq pobj (ph-vl-find db))
 		(setq file (ph-file-relative buffer-file-name (ph-dirname db)))
@@ -25,7 +28,8 @@
 
 (defun ph-kill-buffer-hook()
   (cl-block nil
-	(if (or (not buffer-file-name)
+	(if (or ph-status-busy
+			(not buffer-file-name)
 			(not (ph-buffer-pobj-get)))
 		(cl-return))
 
@@ -41,7 +45,9 @@
 	  )))
 
 (defun ph-dired-after-readin-hook ()
-  "Marks buffer as belonging to project if dired dir is a child to project dir."
+  "Marks buffer as belonging to project if dired dir is a child to project dir.
+This hook doesn't need ph-status-busy checks because it doesn't
+write to db."
   (cl-block nil
 	(let (pobj cwd db)
 	  (unless (stringp dired-directory) (cl-return))
@@ -129,7 +135,8 @@ Return nil on error."
   "Return a number of opened files or nil on error."
   (interactive "fOpen .ph file: ")
   (cl-block nil
-	(if (or (not file) (not (stringp file))) (cl-return nil))
+	(if (or ph-status-busy
+			(not file)) (cl-return nil))
 
 	(let ((openedFiles 0)
 		  pobj pfile cell)
@@ -137,11 +144,11 @@ Return nil on error."
 		(ph-warn 0 (format "cannot parse project %s" file))
 		(cl-return nil))
 	  (when (ph-vl-find file)
-		(ph-warn 1 (format "project %s is already loaded in emacs" file))
+		(ph-warn 0 (format "project %s is already loaded in emacs" file))
 		(cl-return nil))
 
 	  (setq cell (ph-vl-add pobj))
-	  (remove-hook 'find-file-hook 'ph-find-file-hook)
+	  (setq ph-status-busy t)
 	  (unwind-protect
 		  (ph-venture-opfl-each pobj
 								(lambda (key _val)
@@ -158,8 +165,8 @@ Return nil on error."
 									(ph-venture-opfl-rm pobj key))
 
 								  ))
-		;; always restore the hook
-		(add-hook 'find-file-hook 'ph-find-file-hook))
+		;; always make sure that hooks are working again
+		(setq ph-status-busy nil))
 
 	  ;; sync db with memory objects
 	  (ph-venture-marshalling pobj)
@@ -176,20 +183,21 @@ Return nil on error."
   "Close all currently opened project files. Return t on success."
   (interactive)
   (cl-block nil
+	(if ph-status-busy (cl-return nil))
 	(when (and (not (ph-ven-p pobj))
 			   (not (setq pobj (ph-buffer-pobj-get))))
 	  (ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
 	  (cl-return nil))
 
-	(remove-hook 'kill-buffer-hook 'ph-kill-buffer-hook)
+	(setq ph-status-busy t)
 	;; kill buffers in usual emacs fashion, some buffers may be unsaved
 	;; & user can press C-g thus killing only a subset of buffers
 	(unwind-protect
 		(dolist (idx (ph-buffer-list pobj))
 		  (with-demoted-errors
 			(if idx (kill-buffer idx))))
-	  ;; always restore the hook
-	  (add-hook 'kill-buffer-hook 'ph-kill-buffer-hook))
+	  ;; always make sure that hooks are working again
+	  (setq ph-status-busy nil))
 
 	;; remove project from ph-vl if user didn't hit C-g
 	(ph-vl-rm (ph-ven-db pobj))
@@ -201,7 +209,9 @@ Return a path to db.  If DIR is a subproject, close parent
 project & clean its db from subproject files."
   (interactive "GCreate project in: ")
   (cl-block nil
-	(if (not dir) (cl-return nil))
+	(if (or ph-status-busy
+			(not dir)) (cl-return nil))
+
 	(let ((db (ph-db-get dir))
 		  parDb parObj pobj)
 	  (if (file-exists-p db)
