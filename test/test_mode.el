@@ -456,6 +456,24 @@
 	(tdd-setup-global))
   )
 
+(ert-deftest ph-before-save-hook_prefix()
+  (ph-project-open "level-1/.ph")
+  (cd tdd-work-dir)
+  (should (= 5 (length (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+  (should (set-buffer "w.txt<2>"))
+  (insert "hi")
+  (basic-save-buffer)
+
+  (cd tdd-work-dir)
+  (should (= 5 (length (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+  (cd tdd-work-dir)
+  (ph-project-close (ph-vl-find "level-1/.ph"))
+  (tdd-setup-global)
+  )
+
+
 
 
 (ert-run-tests-batch-and-exit (car argv))

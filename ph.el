@@ -63,14 +63,16 @@ write to db."
 (defun ph-before-save-hook ()
   "Simple protection from (set-visited-file-name)."
     (cl-block nil
-	  (let (pobj prefix)
+	  (let (pobj)
 		(if (or
 			 (not buffer-file-name)
 			 (not (setq pobj (ph-buffer-pobj-get))))
 			(cl-return))
 
-		(setq prefix (ph-dirname buffer-file-name))
-		(when (not (equal prefix (ph-venture-opfl-prefix pobj)))
+		(when (not
+			   (string-prefix-p (ph-venture-opfl-prefix pobj) buffer-file-name))
+;		  (print (format "OUT %s from %s"
+;						 buffer-file-name (ph-venture-opfl-prefix pobj)))
 		  ;; user has pointed the buffer to some file that is NOT in a
 		  ;; project directory
 		  (ph-venture-opfl-rm pobj ph-buffer-orig-file-name)
@@ -80,6 +82,10 @@ write to db."
 		(when (not (equal buffer-file-name
 						  (ph-venture-opfl-absolute
 						   pobj ph-buffer-orig-file-name)))
+;		  (print (format "IN %s != %s"
+;						 buffer-file-name (ph-venture-opfl-absolute
+;										   pobj ph-buffer-orig-file-name)))
+
 		  ;; buffer was moved in boundaries of the project directory
 		  (ph-venture-opfl-rm pobj ph-buffer-orig-file-name)
 		  (setq ph-buffer-orig-file-name (ph-file-relative
@@ -87,7 +93,8 @@ write to db."
 										  (ph-venture-opfl-prefix pobj)))
 		  (ph-venture-opfl-add pobj ph-buffer-orig-file-name)
 		  (ph-venture-marshalling pobj)
-		  ))))
+		  )))
+	)
 
 
 
