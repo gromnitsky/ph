@@ -389,47 +389,72 @@
   )
 
 (ert-deftest ph-before-save-hook ()
-  (let (bf-a bf-b bf-c)
-	(ph-project-open "a/.ph")
-	(cd tdd-work-dir)
-	(should (= 3 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+  (ph-project-open "a/.ph")
+  (cd tdd-work-dir)
+  (should (= 3 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
 
-	;; move buffer
-	(should (set-buffer "three.txt"))
-	(rename-file "three.txt" "/tmp/NEW-THREE.TXT" t)
-	(set-visited-file-name "/tmp/NEW-THREE.TXT")
-	(basic-save-buffer)
+  ;; move buffer
+  (should (set-buffer "three.txt"))
+  (rename-file "three.txt" "/tmp/NEW-THREE.TXT" t)
+  (set-visited-file-name "/tmp/NEW-THREE.TXT")
+  (basic-save-buffer)
 
-	;; moved buffer must be deleted from ph-vl cell & unmarked
-	(cd tdd-work-dir)
-	(should-not (ph-buffer-pobj-get))
-	(should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
-	(should (= 1 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+  ;; moved buffer must be deleted from ph-vl cell & unmarked
+  (cd tdd-work-dir)
+  (should-not (ph-buffer-pobj-get))
+  (should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+  (should (= 1 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
 
-	;; rename buffer but keep it under project directory
-	(should (set-buffer "two.txt"))
-	(rename-file "two.txt" "../TWO.TXT" t)
-	(set-visited-file-name "../TWO.TXT")
-	(basic-save-buffer)
+  ;; rename buffer but keep it under project directory
+  (should (set-buffer "two.txt"))
+  (rename-file "two.txt" "../TWO.TXT" t)
+  (set-visited-file-name "../TWO.TXT")
+  (basic-save-buffer)
 
-	(cd tdd-work-dir)
-	(should (ph-buffer-pobj-get))
-	(should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
-	(should (= 1 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
-	(should (ph-venture-opfl-get (ph-vl-find "a/.ph")
-								 ph-buffer-orig-file-name))
+  (cd tdd-work-dir)
+  (should (ph-buffer-pobj-get))
+  (should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+  (should (= 1 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+  (should (ph-venture-opfl-get (ph-vl-find "a/.ph")
+							   ph-buffer-orig-file-name))
 
-	(delete-file "/tmp/NEW-THREE.TXT")
-	(ph-project-close (ph-vl-find "a/.ph"))
+  (delete-file "/tmp/NEW-THREE.TXT")
+  (ph-project-close (ph-vl-find "a/.ph"))
 
-	;; reopen project
-	(ph-project-open "a/.ph")
-	(cd tdd-work-dir)
-	(should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
-	(ph-project-close (ph-vl-find "a/.ph"))
+  ;; reopen project
+  (ph-project-open "a/.ph")
+  (cd tdd-work-dir)
+  (should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
+  (ph-project-close (ph-vl-find "a/.ph"))
 
-	(tdd-setup-global)
-	))
+  (tdd-setup-global)
+  )
+
+(ert-deftest ph-before-save-hook_readonly()
+  (chmod "a" #o500)
+  (unwind-protect
+	  (progn
+		(ph-project-open "a/.ph")
+
+		;; move buffer
+		(should (set-buffer "three.txt"))
+		(set-visited-file-name "/tmp/NEW-THREE.TXT")
+		(basic-save-buffer)
+
+		;; close
+		(cd tdd-work-dir)
+		(ph-project-close (ph-vl-find "a/.ph"))
+
+		;; reopen
+		(ph-project-open "a/.ph")
+		(cd tdd-work-dir)
+		(should (= 2 (ph-venture-opfl-size (ph-vl-find "a/.ph"))))
+
+		(ph-project-close (ph-vl-find "a/.ph"))
+		(delete-file "/tmp/NEW-THREE.TXT"))
+	(chmod "a" #o755)
+	(tdd-setup-global))
+  )
 
 
 

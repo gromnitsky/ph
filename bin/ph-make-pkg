@@ -10,4 +10,5 @@
 (with-temp-file
 	"ph-pkg.el"
   (insert (prin1-to-string
-		   (list 'define-package ph-meta-name ph-meta-version ph-meta-desc))))
+		   (list 'define-package
+				 ph-meta-name ph-meta-version ph-meta-desc ph-meta-reqs))))

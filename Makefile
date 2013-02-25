@@ -23,6 +23,10 @@ ph-pkg.el: ph-meta.el
 
 packageName: ph-pkg.el
 	$(eval PKG_NAME := $(shell bin/ph-pkg2json $< | $(JSON) -a -d- name version))
+	@if [ "$(PKG_NAME)" = "" ] ; then \
+		echo "cannot extract pkg name"; \
+		exit 1; \
+	fi; :
 
 package: packageName
 	$(TAR) --transform='s,^,$(PKG_NAME)/,S' -cf $(PKG_NAME).tar \
