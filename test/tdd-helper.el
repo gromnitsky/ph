@@ -55,6 +55,9 @@
 		  ph-status-before-save-hook
 		  ))
 
+(defun y-or-n-p(prompt)
+  tdd-y-or-n)
+
 ;; setup
 (tdd-setup-global)
 

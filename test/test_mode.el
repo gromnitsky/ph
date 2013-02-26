@@ -71,6 +71,8 @@
 	(ph-project-close (ph-vl-find "b/.ph"))
 	(ph-project-close (ph-vl-find "level-1/.ph"))
 	(ph-project-close (ph-vl-find "1/2/3/.ph"))
+
+	(should (equal "0 0 4 0" (hook-counters)))
 	(tdd-setup-global)
 	))
 
@@ -91,6 +93,8 @@
 				 (expand-file-name ph-buffer-orig-file-name)))
 
   (ph-project-close (ph-vl-find "a/.ph"))
+
+  (should (equal "0 0 1 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -130,6 +134,7 @@
 	;; cleanup
 	(ph-project-close (ph-vl-find "a/.ph"))
 	(ph-project-close (ph-vl-find "b/.ph"))
+	(should (equal "0 0 2 0" (hook-counters)))
 	(tdd-setup-global)
 	))
 
@@ -157,6 +162,7 @@
   (should (equal 0 (length (ph-buffer-list (ph-vl-find "b/.ph")))))
 
 ;  (print (buffer-list))
+  (should (equal "0 0 2 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -171,11 +177,9 @@
 	(should (equal 1 (ph-vl-size)))
 
 	(ph-project-close (ph-vl-find "project-new_simple/2/3/.ph"))
+	(should (equal "0 0 1 0" (hook-counters)))
 	(tdd-setup-global)
 	))
-
-(defun y-or-n-p(prompt)
-  tdd-y-or-n)
 
 (ert-deftest ph-project-new_subproject()
   ;; open 1st project
@@ -196,18 +200,22 @@
 
 	(ph-project-close (ph-vl-find "level-1/.ph"))
 	(ph-project-close (ph-vl-find "level-1/level-2/.ph"))
+	(should (equal "0 0 3 0" (hook-counters)))
 	(tdd-setup-global)
 	))
 
 (ert-deftest ph-project-new_subproject_2()
   ;; create a project
   (should (ph-project-new "."))
+  (should (equal 1 (ph-vl-size)))
 
   ;; create a subproject
   (delete-file "level-1/.ph")
   (should (ph-project-new "level-1"))
+  (should (equal 1 (ph-vl-size)))		; prev is closed as a subproject
 
   (ph-project-close (ph-vl-find "level-1/.ph"))
+  (should (equal "0 0 2 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -226,6 +234,7 @@
   ;; level-1 project parsing error
   (should-error (ph-project-new "level-1/level-2"))
 
+  (should (equal "0 0 0 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -237,6 +246,7 @@
   (should (equal (expand-file-name "a/.ph") (ph-project-which)))
 
   (ph-project-close "a/.ph")
+  (should (equal "0 0 1 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -263,6 +273,7 @@
 	(should (equal buried (nth 1 (ph-buffer-list (ph-vl-find "level-1/.ph")))))
 
 	(ph-project-close (ph-vl-find "level-1/.ph"))
+	(should (equal "0 0 1 0" (hook-counters)))
 	(tdd-setup-global)
 	))
 
@@ -270,19 +281,22 @@
   (should-error (ph-project-switch))
 
   (ph-project-open "a/.ph")
+  (cd tdd-work-dir)
   (ph-project-open "b/.ph")
+  (cd tdd-work-dir)
   (ph-project-open "level-1/.ph")
+  (cd tdd-work-dir)
 
   (should (equal "a" (ph-project-switch)))
   (should (equal 'dired-mode
 				 (buffer-local-value 'major-mode (get-buffer "a"))))
 
-  (cd tdd-work-dir)
   (ph-project-close (ph-vl-find "a/.ph"))
   (ph-project-close (ph-vl-find "b/.ph"))
   ;; "level-1" dired buffer must be killed automatically
   (ph-project-close (ph-vl-find "level-1/.ph"))
 
+  (should (equal "0 0 3 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -313,6 +327,8 @@
 
   (kill-buffer "empty.txt")
   (ph-project-close (ph-vl-find "b/.ph"))
+
+  (should (equal "1 0 1 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -339,6 +355,7 @@
   (should (= 1 (ph-venture-opfl-size (ph-venture-unmarshalling "a/.ph"))))
 
   (ph-project-close (ph-vl-find "a/.ph"))
+  (should (equal "0 1 1 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -359,6 +376,7 @@
   (should (equal 2 (ph-venture-opfl-size (ph-venture-unmarshalling "a/.ph"))))
 
   (ph-project-close (ph-vl-find "a/.ph"))
+  (should (equal "0 1 1 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -400,6 +418,7 @@
   (kill-buffer "etc")
   (kill-buffer "c")
 ;  (print (buffer-list))
+  (should (equal "0 0 2 0" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -442,6 +461,7 @@
   (should (= 2 (length (ph-buffer-list (ph-vl-find "a/.ph")))))
   (ph-project-close (ph-vl-find "a/.ph"))
 
+  (should (equal "0 0 2 2" (hook-counters)))
   (tdd-setup-global)
   )
 
@@ -468,6 +488,7 @@
 		(ph-project-close (ph-vl-find "a/.ph"))
 		(delete-file "/tmp/NEW-THREE.TXT"))
 	(chmod "a" #o755)
+	(should (equal "0 0 2 1" (hook-counters)))
 	(tdd-setup-global))
   )
 
@@ -485,6 +506,7 @@
 
   (cd tdd-work-dir)
   (ph-project-close (ph-vl-find "level-1/.ph"))
+  (should (equal "0 0 1 0" (hook-counters)))
   (tdd-setup-global)
   )
 
