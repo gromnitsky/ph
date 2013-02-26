@@ -145,7 +145,7 @@ major mode changes."
 	))
 
 (defun ph-buffer-list (pobj)
-  "Iterate through buffer-list & return only POBJ buffers."
+  "Iterate through (buffer-list) & return only POBJ buffers."
   (cl-block nil
 	(let ((flist '()) cell)
 	  (unless (ph-ven-p pobj) (cl-return flist))
@@ -153,8 +153,25 @@ major mode changes."
 	  (dolist (idx (buffer-list))
 		(if (and (setq cell (ph-buffer-pobj-get idx))
 				 (eq pobj cell))
-			(setq flist (append flist (list idx)))))
-	  flist)))
+			(push idx flist)
+		  ))
+	  (reverse flist))))
+
+;; FIXME: make more general with params like :current & :names
+(defun ph-buffer-list-names (pobj)
+  "Iterate through (buffer-list) & return only POBJ buffer names
+except current buffer."
+  (cl-block nil
+	(let ((flist '()) cell)
+	  (unless (ph-ven-p pobj) (cl-return flist))
+
+	  (dolist (idx (buffer-list))
+		(if (and (not (equal idx (current-buffer)))
+				 (setq cell (ph-buffer-pobj-get idx))
+				 (eq pobj cell))
+		  (push (buffer-name idx) flist)))
+
+	  (reverse flist))))
 
 
 
@@ -332,9 +349,7 @@ Return a buffer name if switch was done."
 
 	;; create a list of POBJ emacs buffer names (not file names)
 	;; skipping current buffer
-	(dolist (idx bf)
-	  (unless (equal idx (current-buffer))
-		(setq flist (append flist (list (buffer-name idx)))))) ; elisp is boring
+	(setq flist (ph-buffer-list-names pobj))
 
 	(if (= 0 (length flist))
 		(progn
