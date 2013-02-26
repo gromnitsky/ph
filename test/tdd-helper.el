@@ -17,6 +17,7 @@
   (ignore-errors
 	(delete-directory tdd-work-dir t))
   (mkdir tdd-work-dir)
+  (zero-hook-counters)
   (cd tdd-work-dir)
 
   (cl-loop for idx in (file-expand-wildcards "../data/*") do
@@ -38,6 +39,21 @@
 			   (pp value))
 			 (terpri))
 		   hash))
+
+(defun zero-hook-counters ()
+  (setq ph-status-find-file-hook 0)
+  (setq ph-status-kill-buffer-hook 0)
+  (setq ph-status-dired-after-readin-hook 0)
+  (setq ph-status-before-save-hook 0)
+)
+
+(defun hook-counters ()
+  (format "%d %d %d %d"
+		  ph-status-find-file-hook
+		  ph-status-kill-buffer-hook
+		  ph-status-dired-after-readin-hook
+		  ph-status-before-save-hook
+		  ))
 
 ;; setup
 (tdd-setup-global)

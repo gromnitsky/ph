@@ -4,12 +4,14 @@
 
 ** Sure
 
-- [X] progress-reporter for ph-project-open & ph-project-close
-- [X] inject to before-save-hook to mitigate (set-visited-file-name) damage
+- [X] use ph-status-busy only as a concrete file semaphore, e.g. set it
+  to a file name in ph-project-close, then in ph-kill-file hook do
+  cl-return only if ph-status-busy == buffer-file-name.
+- [X] leave cl-lib 'require' only in ph-u.el
 
 ** Unsure
 
 - [ ] recursive check for subprojects
 - [ ] make ph-kill-buffer-hook buffer local
-- [X] use semaphore instead of removing/adding hooks
+- [ ] title in modeline
 - [ ] temporally disable auto-revert in ph-project-close

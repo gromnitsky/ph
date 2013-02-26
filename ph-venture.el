@@ -1,7 +1,5 @@
 ;; -*- lexical-binding: t -*-
 
-(require 'cl-lib)
-
 (require 'ph-u)
 
 (defconst ph-SIM-DIR-MAX 64

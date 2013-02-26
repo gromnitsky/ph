@@ -1,22 +1,30 @@
 ;; -*- lexical-binding: t -*-
 
-(require 'cl-lib)
-
 (require 'ph-venture)
 
 ;; shut up the compiler
 (defvar ph-buffer-pobj)
 (defvar ph-buffer-orig-file-name)
 
-(defvar ph-status-busy nil "A global semaphore for hooks")
+;; Set it to a file name in ph-project-close/-open, then in
+;; ph-find-file-hook/ph-kill-file-hook do (cl-return) only if
+;; ph-status-busy == buffer-file-name.
+(defvar ph-status-busy nil "A global semaphore for file hooks")
+
+;; Used in unit tests. Increments only if did the job. May overflow, we
+;; doesn't care.
+(defvar ph-status-find-file-hook 0)
+(defvar ph-status-kill-buffer-hook 0)
+(defvar ph-status-dired-after-readin-hook 0)
+(defvar ph-status-before-save-hook 0)
 
 
 
 (defun ph-find-file-hook()
   (cl-block nil
 	(let (db pobj file)
-	  (if (or ph-status-busy
-			  (not buffer-file-name)
+	  (if (or (not buffer-file-name)
+			  (equal ph-status-busy buffer-file-name)
 			  (not (setq db (ph-db-find buffer-file-name))))
 		  (cl-return))
 
@@ -25,13 +33,15 @@
 
 		(ph-buffer-pobj-set pobj)
 		(ph-venture-opfl-add pobj file)
-		(ph-venture-marshalling pobj))
+		(ph-venture-marshalling pobj)
+
+		(cl-incf ph-status-find-file-hook))
 	  )))
 
 (defun ph-kill-buffer-hook()
   (cl-block nil
-	(if (or ph-status-busy
-			(not buffer-file-name)
+	(if (or (not buffer-file-name)
+			(equal ph-status-busy buffer-file-name)
 			(not (ph-buffer-pobj-get)))
 		(cl-return))
 
@@ -41,6 +51,7 @@
 								   (ph-venture-opfl-prefix pobj)))
 
 	  (ph-venture-opfl-rm pobj file)
+	  (cl-incf ph-status-kill-buffer-hook)
 	  (unless (ph-venture-marshalling pobj)
 		;; restore file in ph-vl POBJ if marshalling failed
 		(ph-venture-opfl-add pobj file))
@@ -57,12 +68,16 @@ write to db."
 
 	  (unless (setq db (ph-db-find cwd)) (cl-return))
 
-	  (if (setq pobj (ph-vl-find db)) (ph-buffer-pobj-set pobj))
+	  (when (setq pobj (ph-vl-find db))
+		(ph-buffer-pobj-set pobj)
+		(cl-incf ph-status-dired-after-readin-hook))
 	  )))
 
 (defun ph-before-save-hook ()
-  "Simple protection from (set-visited-file-name)."
-    (cl-block nil
+  "Simple protection from (set-visited-file-name).
+This hook doesn't need ph-status-busy checks because, h'm, it too
+long to explain."
+  (cl-block nil
 	  (let (pobj)
 		(if (or
 			 (not buffer-file-name)
@@ -77,6 +92,8 @@ write to db."
 		  ;; project directory
 		  (ph-venture-opfl-rm pobj ph-buffer-orig-file-name)
 		  (ph-buffer-pobj-unset)
+
+		  (cl-incf ph-status-before-save-hook)
 		  (cl-return))
 
 		(when (not (equal buffer-file-name
@@ -93,6 +110,8 @@ write to db."
 										  (ph-venture-opfl-prefix pobj)))
 		  (ph-venture-opfl-add pobj ph-buffer-orig-file-name)
 		  (ph-venture-marshalling pobj)
+
+		  (cl-incf ph-status-before-save-hook)
 		  )))
 	)
 
@@ -180,11 +199,10 @@ Return nil on error."
   "Return a number of opened files or nil on error."
   (interactive "fOpen .ph file: ")
   (cl-block nil
-	(if (or ph-status-busy
-			(not file)) (cl-return nil))
+	(unless file (cl-return nil))
 
 	(let ((openedFiles 0) (nFile 0)
-		  report pobj pfile cell)
+		  report pobj cell)
 	  (when (not (setq pobj (ph-venture-unmarshalling file)))
 		(ph-warn 0 (format "cannot parse project %s" file))
 		(cl-return nil))
@@ -192,17 +210,18 @@ Return nil on error."
 		(ph-warn 0 (format "project %s is already loaded in emacs" file))
 		(cl-return nil))
 
+;	  (print (nth 5 (file-attributes file)))
 	  (setq cell (ph-vl-add pobj))
 	  (setq report (make-progress-reporter
 					(format "Opening %s... " file) 0 (ph-venture-opfl-size pobj)))
-	  (setq ph-status-busy t)
 	  (unwind-protect
 		  (ph-venture-opfl-each pobj
 								(lambda (key _val)
-								  (setq pfile (ph-venture-opfl-absolute pobj key))
-								  (if (file-readable-p pfile)
+								  (setq ph-status-busy
+										(ph-venture-opfl-absolute pobj key))
+								  (if (file-readable-p ph-status-busy)
 									  (condition-case err
-										  (when (find-file pfile)
+										  (when (find-file ph-status-busy)
 											(ph-buffer-pobj-set cell)
 											(cl-incf openedFiles))
 										(error
@@ -232,7 +251,6 @@ Return nil on error."
   "Close all currently opened project files. Return t on success."
   (interactive)
   (cl-block nil
-	(if ph-status-busy (cl-return nil))
 	(when (and (not (ph-ven-p pobj))
 			   (not (setq pobj (ph-buffer-pobj-get))))
 	  (ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
@@ -243,11 +261,11 @@ Return nil on error."
 					(format "Closing %s... " (ph-ven-db pobj)) 0 (length buflist)))
 		   (nFile 0))
 
-	  (setq ph-status-busy t)
 	  ;; kill buffers in usual emacs fashion, some buffers may be unsaved
 	  ;; & user can press C-g thus killing only a subset of buffers
 	  (unwind-protect
 		  (dolist (idx buflist)
+			(setq ph-status-busy (buffer-file-name idx))
 			(with-demoted-errors
 			  (if idx (kill-buffer idx)))
 			(progress-reporter-update report (cl-incf nFile)))
@@ -265,8 +283,7 @@ Return a path to db.  If DIR is a subproject, close parent
 project & clean its db from subproject files."
   (interactive "GCreate project in: ")
   (cl-block nil
-	(if (or ph-status-busy
-			(not dir)) (cl-return nil))
+	(unless dir (cl-return nil))
 
 	(let ((db (ph-db-get dir))
 		  parDb parObj pobj)

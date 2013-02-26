@@ -27,6 +27,21 @@
 
 
 
+(ert-deftest 2hooks()
+  (should (= 4 (ph-project-open "level-1/.ph")))
+  (find-file "BWAA")
+  (basic-save-buffer)
+
+  (cd tdd-work-dir)
+  (kill-buffer "w.txt")
+
+  (should (ph-project-close (ph-vl-find "level-1/.ph")))
+  (should (= 4 (ph-venture-opfl-size (ph-venture-unmarshalling "level-1/.ph"))))
+
+  (should (equal "1 1 1 0" (hook-counters)))
+  (tdd-setup-global)
+  )
+
 (ert-deftest ph-buffer-list()
   (should-not (ph-buffer-list nil))
 
