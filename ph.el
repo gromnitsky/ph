@@ -292,6 +292,7 @@ project & clean its db from subproject files."
   (interactive "GCreate project in: ")
   (cl-block nil
 	(unless dir (cl-return nil))
+	(setq dir (expand-file-name dir))
 
 	(let ((db (ph-db-get dir))
 		  parDb parObj pobj)
