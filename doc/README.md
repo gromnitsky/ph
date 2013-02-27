@@ -10,16 +10,17 @@ FIXME: a brave link to youtube
 
 ## Features
 
-* Nothing to configure
+* Nothing to configure.
 * Support any types of projects & any files.
-* Ido-style project files switching
-* Any number of opened projects simultaneously
-* Auto-remembering/-forgetting what file belongs to a project
+* Ido-style project files switching.
+* Any number of opened projects simultaneously.
+* Auto-remembering/-forgetting what file belongs to a project.
 * Open/close project files with 1 command.
 * Doesn't touch your Emacs configs & doesn't write anywhere except 1
   special file in project directory.
-
-FIXME: explain more
+* Detects file moving withing project sub-directories & outside of
+  project directory.
+* Menu for quick projects switching.
 
 ## Installation
 
@@ -105,7 +106,6 @@ Probably won't work under Windows at all. No idea about OSX.
 
 ## BUGS
 
-* *May* not work with auto-revert-mode (autorevert.el).
 * Start emacs (opened projects == 0), open a file in some project
   directory. Then `ph-project-open` *that* project. If the file wasn't
   in the db it wouldn't be recorded until user kills it and opens again
