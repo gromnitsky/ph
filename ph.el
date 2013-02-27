@@ -173,10 +173,10 @@ Return pobj db or nil on error."
   (cl-block nil
 	(when (and (not (ph-ven-p pobj))
 			   (not (setq pobj (ph-buffer-pobj-get))))
-	  (ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
+	  (ph-warn 1 "%s doesn't belong to any opened project" (current-buffer))
 	  (cl-return nil))
 
-	(ph-warn 0 (format "%s: %s" (ph-venture-name pobj) (ph-ven-db pobj)))
+	(ph-warn 0 "%s: %s" (ph-venture-name pobj) (ph-ven-db pobj))
 	(ph-ven-db pobj)
 	))
 
@@ -193,7 +193,7 @@ Return nil on error."
 	  (if (setq pobj (ph-vl-find file)) (cl-return pobj))
 
 	  (when (not (setq pobj (ph-venture-unmarshalling file)))
-		(ph-warn 0 (format "cannot parse project %s" file))
+		(ph-warn 1 "cannot parse project %s" file)
 		(cl-return nil))
 
 	  (ph-vl-add pobj)
@@ -212,10 +212,10 @@ Return nil on error."
 	(let ((openedFiles 0) (nFile 0)
 		  report pobj cell)
 	  (when (not (setq pobj (ph-venture-unmarshalling file)))
-		(ph-warn 0 (format "cannot parse project %s" file))
+		(ph-warn 1 "cannot parse project %s" file)
 		(cl-return nil))
 	  (when (ph-vl-find file)
-		(ph-warn 0 (format "project %s is already loaded in emacs" file))
+		(ph-warn 1 "project %s is already loaded in emacs" file)
 		(cl-return nil))
 
 ;	  (print (nth 5 (file-attributes file)))
@@ -234,8 +234,8 @@ Return nil on error."
 											(cl-incf openedFiles))
 										(error
 										 (ph-venture-opfl-rm pobj key)
-										 (ph-warn 0 (format "find-file failed: %s"
-												  (error-message-string err)))))
+										 (ph-warn 1 "find-file failed: %s"
+												  (error-message-string err))))
 									(ph-venture-opfl-rm pobj key))
 
 								  (progress-reporter-update report (cl-incf nFile))
@@ -261,7 +261,7 @@ Return nil on error."
   (cl-block nil
 	(when (and (not (ph-ven-p pobj))
 			   (not (setq pobj (ph-buffer-pobj-get))))
-	  (ph-warn 0 (format "%s doesn't belong to any opened project" (current-buffer)))
+	  (ph-warn 1 "%s doesn't belong to any opened project" (current-buffer))
 	  (cl-return nil))
 
 	(let* ((buflist (ph-buffer-list pobj))
@@ -342,8 +342,7 @@ Return a buffer name if switch was done."
 
 	(if (= 0 (length buflist))
 		(progn
-		  (ph-warn 0 (format "%s is the only 1 opened in this project"
-							 (current-buffer)))
+		  (ph-warn 1 "%s is the only 1 opened in this project" (current-buffer))
 		  (current-buffer))
 	  (when (setq buf (ido-completing-read "ph: " buflist))
 		(switch-to-buffer buf))

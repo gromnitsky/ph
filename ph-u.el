@@ -4,17 +4,19 @@
 
 (require 'ph-meta)
 
-(defvar ph-verbose 2 "Verbosity level")
+(defvar ph-verbose 1 "Verbosity level")
 
 
 
-(defun ph-warn (level str)
+(defun ph-warn (level str &rest args)
   "Print a message via (message) according to LEVEL."
   (when (<= level ph-verbose)
-	(if (= 0 level)
-		(message str)
-	  (message (concat ph-meta-name ": " str)))
+	(if (/= 0 level) (setq str (concat ph-meta-name ": " str)))
+	(message (apply 'format str args))
 	))
+
+(defun ph-puts (str &rest args)
+  (print (apply 'format str args)))
 
 (defun ph-chomp (str)
   "Chomp leading and tailing whitespace from STR."

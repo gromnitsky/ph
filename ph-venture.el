@@ -208,8 +208,7 @@ Return a pointer to a cell in ph-vl list or nil on error."
 
 	(let (cell)
 	  (when (setq cell (ph-vl-find (ph-ven-db pobj)))
-		(ph-warn 1 (format "project %s is already loaded in emacs"
-						   (ph-ven-db pobj)))
+		(ph-warn 1 "project %s is already loaded in emacs" (ph-ven-db pobj))
 		(cl-return cell))
 
 	  (car (push pobj ph-vl)))))
