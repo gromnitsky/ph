@@ -144,34 +144,25 @@ major mode changes."
 	(kill-local-variable 'ph-buffer-orig-file-name)
 	))
 
-(defun ph-buffer-list (pobj)
-  "Iterate through (buffer-list) & return only POBJ buffers."
+(cl-defun ph-buffer-list (pobj &key nocb names)
+  "Iterate through (buffer-list) & return only POBJ buffers.
+NOCB meams don't include current buffer in the result;
+NAMES means return just buffer names, not full buffer objects."
   (cl-block nil
-	(let ((flist '()) cell)
-	  (unless (ph-ven-p pobj) (cl-return flist))
+	(let (buflist cell)
+	  (unless (ph-ven-p pobj) (cl-return nil))
 
 	  (dolist (idx (buffer-list))
-		(if (and (setq cell (ph-buffer-pobj-get idx))
-				 (eq pobj cell))
-			(push idx flist)
-		  ))
-	  (reverse flist))))
+		(catch 'continue
+		  (if (and nocb (equal idx (current-buffer))) (throw 'continue nil))
 
-;; FIXME: make more general with params like :current & :names
-(defun ph-buffer-list-names (pobj)
-  "Iterate through (buffer-list) & return only POBJ buffer names
-except current buffer."
-  (cl-block nil
-	(let ((flist '()) cell)
-	  (unless (ph-ven-p pobj) (cl-return flist))
+		  (when (and (setq cell (ph-buffer-pobj-get idx)) (eq pobj cell))
+			(if names
+				(push (buffer-name idx) buflist)
+			  (push idx buflist))
+			)))
 
-	  (dolist (idx (buffer-list))
-		(if (and (not (equal idx (current-buffer)))
-				 (setq cell (ph-buffer-pobj-get idx))
-				 (eq pobj cell))
-		  (push (buffer-name idx) flist)))
-
-	  (reverse flist))))
+	  (reverse buflist))))
 
 
 
@@ -349,7 +340,7 @@ Return a buffer name if switch was done."
 
 	;; create a list of POBJ emacs buffer names (not file names)
 	;; skipping current buffer
-	(setq flist (ph-buffer-list-names pobj))
+	(setq flist (ph-buffer-list pobj :nocb t :names t))
 
 	(if (= 0 (length flist))
 		(progn

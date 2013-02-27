@@ -54,15 +54,28 @@
 	(cd tdd-work-dir)
 
 	(should (setq bf-a (ph-buffer-list (ph-vl-find "a/.ph"))))
-	(should (setq bf-b (ph-buffer-list (ph-vl-find "b/.ph"))))
+	(should (setq bf-b (ph-buffer-list (ph-vl-find "b/.ph") :names t)))
 	(should (setq bf-c (ph-buffer-list (ph-vl-find "level-1/.ph"))))
 
 	(should (equal 3 (length bf-a)))
+	(dolist (idx bf-a)
+	  (should (bufferp idx)))
+
 	(should (equal 3 (length bf-b)))
+	(dolist (idx bf-b)
+	  (should (stringp idx)))
+
 	(should (equal 5 (length bf-c)))
 
+	(should (equal "level-1" (buffer-name (current-buffer))))
+	(should (= 4 (length (ph-buffer-list (ph-vl-find "level-1/.ph") :nocb t))))
+
+	(set-buffer "a")
+	(should (= 5 (length (ph-buffer-list (ph-vl-find "level-1/.ph") :nocb t))))
+
 	(ph-project-new "1/2/3")
-	(should-not (ph-buffer-list (ph-vl-find "1/2/3/.ph")))
+	(cd tdd-work-dir)
+	(should (= 1 (length (ph-buffer-list (ph-vl-find "1/2/3/.ph")))))
 
 	(should (equal 3 (length bf-a)))
 
