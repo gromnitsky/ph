@@ -422,7 +422,7 @@ See https://github.com/gromnitsky/ph for the help.
 
 (defun ph-menu-generate (_dummy)
   (cl-block nil
-	(let (menu name db)
+	(let (menu name db displayName)
 	  ;; static portion
 	  (setq menu
 			'(["New" ph-project-new]
@@ -436,11 +436,13 @@ See https://github.com/gromnitsky/ph for the help.
 	  (setq menu (append menu '("----")))
 	  (ph-vl-each (lambda (idx)
 					(setq name (ph-venture-name idx))
+					(setq displayName (format "%s (%d)" name
+											  (ph-venture-opfl-size idx)))
 					(setq db (ph-ven-db idx))
 					(setq menu (append
 								menu
 								(list `(
-										,name
+										,displayName
 										["Switch To"
 										 (lambda ()
 										   (interactive)
@@ -451,7 +453,7 @@ See https://github.com/gromnitsky/ph for the help.
 										   (ph-project-close-by-db ,db))]
 										))))
 					))
-	  ;; (print menu)
+;	  (print menu)
 	  menu
 	  )))
 
