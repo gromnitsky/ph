@@ -334,21 +334,18 @@ Return a buffer name if switch was done."
 		   (not (setq pobj (ph-buffer-pobj-get))))
 	  (error "%s doesn't belong to any opened project" (current-buffer)))
 
-  (let ((flist '())
-		bf buf)
-	(if (not (setq bf (ph-buffer-list pobj)))
-		(error "Project %s doesn't have opened files yet" (ph-ven-db pobj)))
-
+  (let (buflist buf)
 	;; create a list of POBJ emacs buffer names (not file names)
 	;; skipping current buffer
-	(setq flist (ph-buffer-list pobj :nocb t :names t))
+	(if (not (setq buflist (ph-buffer-list pobj :nocb t :names t)))
+		(error "Project %s doesn't have opened files yet" (ph-ven-db pobj)))
 
-	(if (= 0 (length flist))
+	(if (= 0 (length buflist))
 		(progn
 		  (ph-warn 0 (format "%s is the only 1 opened in this project"
 							 (current-buffer)))
 		  (current-buffer))
-	  (when (setq buf (ido-completing-read "ph: " flist))
+	  (when (setq buf (ido-completing-read "ph: " buflist))
 		(switch-to-buffer buf))
 	  buf)
 	))
