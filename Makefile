@@ -1,14 +1,16 @@
-.PHONY: test compile clean package packageName
+.PHONY: test compile clean package
 
 EL := $(wildcard *.el)
 ELC := $(patsubst %.el,%.elc,$(wildcard *.el))
 TAR := gtar
 JSON := json
+METADATA := meta.json
+PKG_NAME := $(shell $(JSON) -a -d- name version < $(METADATA))
 
 %.elc: %.el
 	emacs -Q -batch -L `pwd` -f batch-byte-compile $<
 
-test: ph-pkg.el
+test:
 	$(MAKE) -C test fixtures
 	@for idx in test/test_*; do \
 		printf '* %s\n' $$idx ; \
@@ -18,22 +20,15 @@ test: ph-pkg.el
 
 compile: $(ELC)
 
-ph-pkg.el: ph-meta.el
-	bin/ph-make-pkg
+ph-pkg.el: meta.json
+	bin/ph-make-pkg $@
 
-packageName: ph-pkg.el
-	$(eval PKG_NAME := $(shell bin/ph-pkg2json $< | $(JSON) -a -d- name version))
-	@if [ "$(PKG_NAME)" = "" ] ; then \
-		echo "cannot extract pkg name"; \
-		exit 1; \
-	fi; :
-
-package: packageName
+package: ph-pkg.el
 	$(TAR) --transform='s,^,$(PKG_NAME)/,S' -cf $(PKG_NAME).tar \
-		$(EL) README
+		`$(JSON) files < $(METADATA) | $(JSON) -a`
 
-clean: packageName
-	rm -rf $(ELC) $(PKG_NAME).tar
+clean:
+	rm -rf $(ELC) ph-pkg.el $(PKG_NAME).tar
 	$(MAKE) -C test $@
 
 # Debug. Use 'gmake p-obj' to print $(obj) variable.

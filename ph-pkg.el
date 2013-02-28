@@ -1,1 +1,0 @@
-(define-package "ph" "0.0.1" "A global minor mode for managing multiple projects." (quote ((emacs "24.3"))))

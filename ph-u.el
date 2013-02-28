@@ -2,7 +2,7 @@
 
 (require 'cl-lib)
 
-(require 'ph-meta)
+(require 'ph-metadata)
 
 (defvar ph-verbose 1 "Verbosity level")
 

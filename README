@@ -15,6 +15,9 @@ Features
 * Open/close project files with 1 command.
 * Doesn't touch your Emacs configs & doesn't write anywhere except 1
   special file in project directory.
+* Detects file moving withing project sub-directories & outside of
+  project directory.
+* Menu for quick projects switching.
 
 Installation
 
