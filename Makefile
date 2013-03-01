@@ -21,7 +21,7 @@ test:
 compile: $(ELC)
 
 ph-pkg.el: meta.json
-	bin/ph-make-pkg $@
+	bin/ph-make-pkg $< $@
 
 package: ph-pkg.el
 	$(TAR) --transform='s,^,$(PKG_NAME)/,S' -cf $(PKG_NAME).tar \

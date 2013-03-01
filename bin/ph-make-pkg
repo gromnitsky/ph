@@ -4,19 +4,13 @@
  debug-on-error t						; show stack stace
  argv (cdr argv))						; remove '--' from CL arguments
 
-(defconst DATA-PATH (concat (file-name-directory load-file-name) ".."))
-(push DATA-PATH load-path)
-
 (require 'json)
-(require 'ph-metadata)
 
-(defconst METADATA (concat DATA-PATH "/meta.json"))
-
-(when (not (car argv))
-  (message "Usage: %s some-pkg.el" (file-name-base load-file-name))
+(when (not (= 2 (length argv)))
+  (message "Usage: %s meta.json some-pkg.el" (file-name-base load-file-name))
   (kill-emacs 1))
 
-(setq data (json-read-file METADATA))
+(setq data (json-read-file (car argv)))
 
 ;; from (reqs (foobar . "1.2")) to (quote ((foobar "1.2")))
 (setq reqs (cdr (assoc 'reqs data)))
@@ -28,9 +22,10 @@
 	))
 
 (with-temp-file
-	(car argv)
+	(nth 1 argv)
   (insert (prin1-to-string
 		   (list 'define-package
-				 ph-meta-name ph-meta-version
+				 (cdr (assoc 'name data))
+				 (cdr (assoc 'version data))
 				 (cdr (assoc 'docstring data))
 				 reqs))))
