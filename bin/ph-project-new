@@ -4,7 +4,8 @@
  debug-on-error t						; show stack stace
  argv (cdr argv))						; remove '--' from CL arguments
 
-(push (concat (file-name-directory load-file-name) "..") load-path)
+(push (concat (file-name-directory (file-truename load-file-name)) "..")
+	  load-path)
 (require 'ph)
 
 (when (not (= 1 (length argv)))
