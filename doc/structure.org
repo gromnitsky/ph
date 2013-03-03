@@ -17,7 +17,7 @@ Child directories (dired buffers) cannot be recorded in .ph file, but
 they are automatically marked as project belongings if user opens them,
 so when closing the project they will be closed too.
 
-** Project name
+** Project Name
 
 A directory with project files. For example, if /foo/bar contains .ph
 file then project name is 'bar'. If / directory contains .ph, then
@@ -32,6 +32,17 @@ way as emacs invents names for buffers.
 It's possible to have one project enclosed into another. Technically
 they completely independent from each other. It's not possible to have a
 file that belongs to 2 projects. (Symlinks? FIXME)
+
+* CL Utils
+
+|----------------+------------------------------------------------|
+| ph-project-new | Create a project db. Use with caution, because |
+|                | it's not capable in emacs batch mode to handle |
+|                | subprojects that are opened in another emacs   |
+|                | instance.                                      |
+|----------------+------------------------------------------------|
+| ph-make-pkg    | Generate ph-pkg.el from meta.json.             |
+|----------------+------------------------------------------------|
 
 * Lisp
 
@@ -58,7 +69,7 @@ db is always a full path to the .ph file. opfl contains only relative
 paths to the parent dir (this is done for easily moving the project
 directory elsewhere).
 
-** Global list
+** Global List
 
 ph-vl is a list of ph-ven cells and holds currently opened projects in
 emacs. It's updated only if user opens/closes file that belongs to some
@@ -66,9 +77,19 @@ project.
 
 It's persistent across toggling ph-mode but vanishes on emacs exit.
 
-** Project actions
+** Project Actions
 
 All user-level commands are in interactive ph-project-* functions.
+
+| Name                                   | Modifies ph-vl | Modifies db |
+|----------------------------------------+----------------+-------------|
+| ph-project-open                        | x              | x           |
+| ph-project-close                       | x              |             |
+| ph-project-which                       |                |             |
+| ph-project-new                         | x              | x           |
+| ph-project-switch-buffer               |                |             |
+| ph-project-switch                      |                |             |
+| ph-project-switch-buffer-other-project |                |             |
 
 Its prohibited to parse or modify db file or corresponding cell in ph-vl
 list. Use only ph-venture-* & ph-vl-* functions for that.
@@ -81,3 +102,25 @@ project. The same goes for dired buffers.
 
 A "mark" is just a buffer local variable ph-buffer-pobj that points to
 a cell in global ph-vl list.
+
+N.B. To mark buffer, the corresponding project must be already opened.
+
+** Buffer Local Variables
+
+... are permanent-local.
+
+| Name                     | Desc                                      |
+|--------------------------+-------------------------------------------|
+| ph-buffer-pobj           | A pointer to ph-vl cell.                  |
+|                          |                                           |
+| ph-buffer-orig-file-name | A relative to project root dir file name. |
+|                          | Used by ph-before-save-hook.              |
+
+** Hooks
+
+| Name                       | Modifies ph-vl | Modifies db |
+|----------------------------+----------------+-------------|
+| ph-find-file-hook          | x              | x           |
+| ph-kill-buffer-hook        | x              | x           |
+| ph-dired-after-readin-hook | x              |             |
+| ph-before-save-hook        | x              | x           |
