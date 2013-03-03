@@ -3,10 +3,9 @@
 ph is a global minor mode for easy opening/closing/switching groups of
 related files (commonly called "projects").
 
-FIXME: a brave link to youtube
+![emacs ph menu](https://raw.github.com/gromnitsky/ph/master/doc/ss-menu.png)
 
-* For general design see `doc/structure.org`.
-* For advices, critics, bugs et al, fill Issues on Github.
+For general design see `doc/structure.org`.
 
 ## Features
 
@@ -45,9 +44,9 @@ And choose some directory with your pet project files. (It's better to
 close those files in emacs at first, but don't worry it's just for the
 1st time & never again.)
 
-> `C-x-f` some-file-in-the-chosen-directory<br>
-> `C-x-f` another-file-in-the-chosen-directory<br>
-> `C-x-f` and-another-file-in-the-chosen-directory<br>
+> `C-x C-f` some-file-in-the-chosen-directory<br>
+> `C-x C-f` another-file-in-the-chosen-directory<br>
+> `C-x C-f` and-another-file-in-the-chosen-directory<br>
 
 > `M-x` ph-project-switch-buffer
 
