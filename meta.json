@@ -13,6 +13,7 @@
 	"files" : [
 		"*.el",
 		"README",
-		"meta.json"
+		"meta.json",
+		"bin/ph-project-new"
 	]
 }
