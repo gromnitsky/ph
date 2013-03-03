@@ -94,7 +94,7 @@ Probably won't work under Windows at all. No idea about OSX.
 * GNU Tar
 * jsontool (`npm install -g jsontool`)
 
-## Tips
+## Hints
 
 * Use `ph-project-switch-buffer-other-project` command (by default bound
   to `S-F3`) to quickly switch to some opened file in another project.
@@ -102,6 +102,13 @@ Probably won't work under Windows at all. No idea about OSX.
 * Add `.ph` files to `.gitignore`. I don't see a point of having them in
   git repos. `.ph` files are updated whenever you open/close a new file
   & there is no useful metadata in them.
+
+* Make a symlink to `bin/ph-project-new` in some PATH directory if you'd
+  like to make new projects (or upgrade existing) ones from the command
+  line or shell scripts.
+
+* `M-x describe-minor-mode RET ph RET` shows current ph keyboard
+  bindings.
 
 ## BUGS
 

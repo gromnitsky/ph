@@ -6,11 +6,11 @@ Emacs Project Helper
 
 From a user standpoint it's a directory that has .ph file in it. Every
 other file in the directory belongs to the project. User may think that
-the directory is the project itself & .ph file is just a file that emacs
-need to keep track of project files.
+the directory is the project itself & .ph file is just the file that
+emacs requires to keep track of the project files.
 
-If user opens a file within the project directory ph record that in .ph
-file. If user kill buffer with that file, ph removes it from the
+If a user opens some file within the project directory, ph records that
+in .ph file. If user kills buffer with that file, ph removes it from the
 database.
 
 Child directories (dired buffers) cannot be recorded in .ph file, but
@@ -25,16 +25,17 @@ project name is 'Root'. If there are 2 open projects in 2 directories:
 /foo/bar & /bar their names will be 'bar' and 'bar<2>' correspondingly.
 
 Project names are dynamic & are generated automatically in the similar
-way as emacs invents names for buffers.
+manner emacs invents buffer names.
 
 ** Subproject
 
 It's possible to have one project enclosed into another. Technically
-they completely independent from each other. It's not possible to have a
-file that belongs to 2 projects. (Symlinks? FIXME)
+they are completely independent from each other. It's not possible to
+have a file that belongs to 2 projects. (Symlinks? FIXME)
 
 * CL Utils
 
+| Name           | Desc                                           |
 |----------------+------------------------------------------------|
 | ph-project-new | Create a project db. Use with caution, because |
 |                | it's not capable in emacs batch mode to handle |
@@ -42,7 +43,6 @@ file that belongs to 2 projects. (Symlinks? FIXME)
 |                | instance.                                      |
 |----------------+------------------------------------------------|
 | ph-make-pkg    | Generate ph-pkg.el from meta.json.             |
-|----------------+------------------------------------------------|
 
 * Lisp
 
