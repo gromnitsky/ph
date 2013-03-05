@@ -72,10 +72,8 @@ directory elsewhere).
 ** Global List
 
 ph-vl is a list of ph-ven cells and holds currently opened projects in
-emacs. It's updated only if user opens/closes file that belongs to some
-project.
-
-It's persistent across toggling ph-mode but vanishes on emacs exit.
+emacs. It's persistent across toggling ph-mode but vanishes on emacs
+exit.
 
 ** Project Actions
 

@@ -125,7 +125,7 @@
 	(should (equal 1 (ph-vl-size)))
 
 	;; check that db was physically updated
-	(setq pobj (read (ph-read-file "a/.ph")))
+	(setq pobj (read (ph-file-read "a/.ph")))
 	(should (equal 2 (ph-venture-opfl-size pobj)))
 
 	;; open a again
@@ -520,6 +520,65 @@
   (cd tdd-work-dir)
   (ph-project-close (ph-vl-find "level-1/.ph"))
   (should (equal "0 0 1 0" (hook-counters)))
+  (tdd-setup-global)
+  )
+
+(ert-deftest ph-project-file-mv()
+  (ph-project-open "level-1/.ph")
+  (cd tdd-work-dir)
+  (should (= 5 (length (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+  ;; move to tmp
+  (should (set-buffer "w.txt"))
+  (ph-project-file-mv "/tmp/NEW-W.TXT")
+
+  (cd tdd-work-dir)
+  (should (= 4 (length (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+  ;; move to subdir
+  (should (set-buffer "q.txt<2>"))
+  (cd "..")
+  (ph-project-file-mv "1/2/3/")
+
+  (cd tdd-work-dir)
+  (should (= 4 (length (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+  ;; move it mo parent dir
+  (cd "level-1")
+  (ph-project-file-mv "1/2")
+  (cd tdd-work-dir)
+  (should (= 4 (length (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+  (cd tdd-work-dir)
+  (ph-project-close (ph-vl-find "level-1/.ph"))
+  (should (equal "0 0 1 3" (hook-counters)))
+  (delete-file "/tmp/NEW-W.TXT")
+  (tdd-setup-global)
+  )
+
+(ert-deftest ph-project-file-mv_fail()
+  (should (set-buffer "*scratch*"))
+  (should-error (ph-project-file-mv "/tmp/NEW-W.TXT"))
+
+  (ph-project-open "level-1/.ph")
+  (cd tdd-work-dir)
+;  (should (= 5 (length (ph-buffer-list (ph-vl-find "level-1/.ph")))))
+
+  (should (set-buffer "w.txt"))
+  (should-error (ph-project-file-mv "/root"))
+  (should-error (ph-project-file-mv nil))
+  (should-error (ph-project-file-mv ""))
+  (should-error (ph-project-file-mv (expand-file-name "w.txt")))
+
+  (make-symbolic-link "w.txt" "symlink-w.txt")
+  (kill-buffer "w.txt")
+  (cd (concat tdd-work-dir "/level-1"))
+  (find-file "symlink-w.txt")
+  (should-error (ph-project-file-mv "w.txt"))
+
+  (cd tdd-work-dir)
+  (ph-project-close (ph-vl-find "level-1/.ph"))
+  (should (equal "1 1 1 0" (hook-counters)))
   (tdd-setup-global)
   )
 

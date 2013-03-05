@@ -122,7 +122,7 @@ WARNING: it rewrites the file every time."
 (defun ph-venture-unmarshalling (file)
   "Return parsed ph-ven object from FILE or nil on error."
   (cl-block nil
-	(let ((raw (ph-read-file file))
+	(let ((raw (ph-file-read file))
 		  pobj)
 	  (condition-case nil
 		  (setq pobj (read raw))

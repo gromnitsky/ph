@@ -58,7 +58,7 @@ Raise error if DIR isn't a substring of FILE."
 		path)
 	  )))
 
-(defun ph-read-file (file)
+(defun ph-file-read (file)
   "Read the contents of a file and return as a string.
 Return nil on error."
   (cl-block nil

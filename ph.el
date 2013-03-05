@@ -75,7 +75,7 @@ write to db."
 
 (defun ph-before-save-hook ()
   "Simple protection from (set-visited-file-name).
-This hook doesn't need ph-status-busy checks because, h'm, it too
+This hook doesn't need ph-status-busy checks because, h'm, it's too
 long to explain."
   (cl-block nil
 	  (let (pobj)
@@ -382,6 +382,35 @@ Return selected buffer."
 	(when (setq projName (ph-project-select))
 	  (ph-project-switch-buffer (ph-vl-find-by-name projName)))
 	))
+
+(defun ph-project-file-mv (dest)
+  "Move current buffer to DEST."
+  (interactive "Gmv destination: ")
+  (unless buffer-file-name
+	(error "%s is not visiting a file" (buffer-name)))
+  (unless (and dest (> (length dest) 0))
+	(error "Invalid destination"))
+
+  (setq dest (expand-file-name dest))
+  (if (equal buffer-file-name dest)
+	  (error "Source & destination are equal"))
+
+  (let (needSave)
+	;; force 'save' for project files only to auto-update ph-vl et
+	;; al. in before-save-hook.
+	(if (ph-buffer-pobj-get) (setq needSave t))
+
+	;; user entered a directory as a destination
+	(if (or (equal (file-name-as-directory dest) dest)
+			(file-directory-p dest))
+		(setq dest (concat (file-name-as-directory dest)
+						   (file-name-nondirectory buffer-file-name))))
+;	(ph-puts "%s %s" buffer-file-name dest)
+
+	(mkdir (file-name-directory dest) t)
+	(rename-file buffer-file-name dest t)
+	(set-visited-file-name dest)
+	(if needSave (basic-save-buffer))))
 
 
 
