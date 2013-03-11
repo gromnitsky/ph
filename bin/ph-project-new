@@ -1,6 +1,7 @@
 :; exec emacs -Q --script "$0" -- "$@" # -*- mode: emacs-lisp; lexical-binding: t -*-
 
 (setq
+ vc-handled-backends nil
  debug-on-error t						; show stack stace
  argv (cdr argv))						; remove '--' from CL arguments
 
