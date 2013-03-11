@@ -2,7 +2,9 @@
 
 (require 'cl-lib)
 
-(setq argv (cdr argv))					; remove '--' from CL arguments
+(setq
+ vc-handled-backends nil
+ argv (cdr argv))					; remove '--' from CL arguments
 
 (setq ph-verbose 0)
 
