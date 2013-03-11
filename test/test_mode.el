@@ -251,6 +251,32 @@
   (tdd-setup-global)
   )
 
+(ert-deftest ph-project-new_files_already_opened()
+  (ph-project-open "a/.ph")
+  (should (= 1 (ph-vl-size)))
+
+  (cd tdd-work-dir)
+  (find-file "level-1/q.txt")
+  (find-file "w.txt")
+  (cd tdd-work-dir)
+  (find-file "level-1/level-2/q.txt")
+  (find-file "w.txt")
+
+  (ph-project-new ".")
+  (should (= 2 (ph-vl-size)))
+  (cd tdd-work-dir)
+  (should (= 2 (ph-venture-opfl-size (ph-vl-find "level-1/level-2/.ph"))))
+
+  ;; cleanup
+  (cd tdd-work-dir)
+  (should (ph-project-close (ph-vl-find "level-1/level-2/.ph")))
+  (ph-project-close (ph-vl-find "a/.ph"))
+  (kill-buffer "q.txt")
+  (kill-buffer "w.txt")
+;  (print (buffer-list))
+  (tdd-setup-global)
+  )
+
 (ert-deftest ph-project-which()
   (should-not (ph-project-which))
 
@@ -258,7 +284,7 @@
   (cd tdd-work-dir)
   (should (equal (expand-file-name "a/.ph") (ph-project-which)))
 
-  (ph-project-close "a/.ph")
+  (ph-project-close (ph-vl-find "a/.ph"))
   (should (equal "0 0 1 0" (hook-counters)))
   (tdd-setup-global)
   )

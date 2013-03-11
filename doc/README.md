@@ -40,9 +40,10 @@ in the tarball directory.
 
 > `M-x` ph-project-new
 
-And choose some directory with your pet project files. (It's better to
-close those files in emacs at first, but don't worry it's just for the
-1st time & never again.)
+And choose some directory with your pet project files. (It's not
+necessary to kill buffers with those files in Emacs if they are already
+opened--such buffers will be automatically marked as a project
+belongings.)
 
 > `C-x C-f` some-file-in-the-chosen-directory<br>
 > `C-x C-f` another-file-in-the-chosen-directory<br>
@@ -112,7 +113,7 @@ Probably won't work under Windows at all. No idea about OSX.
 
 ## BUGS
 
-* Start emacs (opened projects == 0), open a file in some project
+* Start Emacs (opened projects == 0), open a file in some project
   directory. Then `ph-project-open` *that* project. If the file wasn't
   in the db it wouldn't be recorded until user kills it and opens again
   *when* the project is open. PFX (Possible Future Fix): in

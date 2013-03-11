@@ -144,6 +144,33 @@ major mode changes."
 	(kill-local-variable 'ph-buffer-orig-file-name)
 	))
 
+(defun ph-buffer-list-pobj-set (pobj)
+  "Iterate through (buffer-list) & mark all possible POBJ buffers
+that weren't marked already. This is usefull only
+in (ph-project-new) for a case when user opens some files in
+'foo' dir at first & then creates a project in 'foo' dir.
+
+Return a number of marked buffers."
+  (cl-block nil
+	(unless (ph-ven-p pobj) (cl-return 0))
+
+	(let ((mBuffers 0)
+		  fname)
+	  (dolist (idx (buffer-list))
+		(when (and (not (ph-buffer-pobj-get idx))
+				   (setq fname (buffer-file-name idx))
+				   (string-prefix-p (ph-venture-opfl-prefix pobj) fname))
+		  (with-current-buffer idx
+			(ph-buffer-pobj-set pobj))
+		  (ph-venture-opfl-add pobj (ph-file-relative
+									 fname (ph-venture-opfl-prefix pobj)))
+		  (cl-incf mBuffers)
+		  ))
+
+	  (if (/= 0 mBuffers) (ph-venture-marshalling pobj))
+	  mBuffers
+	  )))
+
 (cl-defun ph-buffer-list (pobj &key nocb names)
   "Iterate through (buffer-list) & return only POBJ buffers.
 NOCB meams don't include current buffer in the result;
@@ -320,6 +347,8 @@ New project was NOT created" parDb))
 	  (setq pobj (ph-venture-new db))
 	  (unless (ph-venture-marshalling pobj)
 		(error "Cannot create project in %s" dir))
+	  ;; mark already opened buffers
+	  (ph-buffer-list-pobj-set pobj)
 	  ;; open dired & forcibly mark it as a project buffer
 	  (if (find-file dir) (ph-buffer-pobj-set pobj))
 

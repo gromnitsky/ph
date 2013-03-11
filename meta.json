@@ -1,6 +1,6 @@
 {
 	"name" : "ph",
-	"version" : "0.0.1",
+	"version" : "0.1.0",
 	"docstring" : "A global minor mode for managing multiple projects.",
 	"reqs" : {
 		"emacs" : "24.3"
