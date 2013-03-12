@@ -150,11 +150,15 @@ that weren't marked already. This is usefull only
 in (ph-project-new) for a case when user opens some files in
 'foo' dir at first & then creates a project in 'foo' dir.
 
+Doesn't do any I/O.
 Return a number of marked buffers."
   (cl-block nil
 	(unless (ph-ven-p pobj) (cl-return 0))
 
 	(let ((mBuffers 0)
+		  (bufCount 0)
+		  (report (make-progress-reporter
+				   "Searching for project buffers... " 0 (length (buffer-list))))
 		  fname)
 	  (dolist (idx (buffer-list))
 		(when (and (not (ph-buffer-pobj-get idx))
@@ -164,10 +168,11 @@ Return a number of marked buffers."
 			(ph-buffer-pobj-set pobj))
 		  (ph-venture-opfl-add pobj (ph-file-relative
 									 fname (ph-venture-opfl-prefix pobj)))
-		  (cl-incf mBuffers)
-		  ))
+		  (cl-incf mBuffers))
 
-	  (if (/= 0 mBuffers) (ph-venture-marshalling pobj))
+		(progress-reporter-update report (cl-incf bufCount)))
+
+	  (progress-reporter-done report)
 	  mBuffers
 	  )))
 
@@ -271,6 +276,8 @@ Return nil on error."
 		(setq ph-status-busy nil)
 		(progress-reporter-done report))
 
+	  ;; mark already opened buffers
+	  (ph-buffer-list-pobj-set pobj)
 	  ;; sync db with memory objects
 	  (ph-venture-marshalling pobj)
 
@@ -345,10 +352,10 @@ New project was NOT created" parDb))
 	  (if (not (file-directory-p dir)) (mkdir dir t))
 
 	  (setq pobj (ph-venture-new db))
-	  (unless (ph-venture-marshalling pobj)
-		(error "Cannot create project in %s" dir))
 	  ;; mark already opened buffers
 	  (ph-buffer-list-pobj-set pobj)
+	  (unless (ph-venture-marshalling pobj)
+		(error "Cannot create project in %s" dir))
 	  ;; open dired & forcibly mark it as a project buffer
 	  (if (find-file dir) (ph-buffer-pobj-set pobj))
 

@@ -267,6 +267,10 @@
   (cd tdd-work-dir)
   (should (= 2 (ph-venture-opfl-size (ph-vl-find "level-1/level-2/.ph"))))
 
+  ;; db check
+  (should (= 2 (ph-venture-opfl-size
+				(ph-venture-unmarshalling "level-1/level-2/.ph"))))
+
   ;; cleanup
   (cd tdd-work-dir)
   (should (ph-project-close (ph-vl-find "level-1/level-2/.ph")))
@@ -350,19 +354,19 @@
   (should (equal 2 (ph-project-open "b/.ph")))
   (cd tdd-work-dir)
   (should (equal 1 (ph-vl-size)))
-  (should (equal 2 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
+  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
 
 	;; record another file
   (find-file "b/b/c/one.txt")
   (cd tdd-work-dir)
-  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
+  (should (equal 4 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
 
   ;; parse raw db
-  (should (equal 3 (ph-venture-opfl-size (ph-venture-unmarshalling "b/.ph"))))
+  (should (equal 4 (ph-venture-opfl-size (ph-venture-unmarshalling "b/.ph"))))
 
   (find-file "/root/boots.txt")
   (cd tdd-work-dir)
-  (should (equal 3 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
+  (should (equal 4 (ph-venture-opfl-size (ph-vl-find "b/.ph"))))
 
   (kill-buffer "empty.txt")
   (ph-project-close (ph-vl-find "b/.ph"))

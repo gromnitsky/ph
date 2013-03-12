@@ -87,7 +87,7 @@ And choose .ph file location.
 * Emacs 24.3
 
 Tested only under Fedora 17 and Emacs 24.3.50.1 (2013-02-08) from trunk.
-Probably won't work under Windows at all. No idea about OSX.
+Won't work under Windows. No idea about OSX.
 
 ### Building
 
@@ -110,15 +110,6 @@ Probably won't work under Windows at all. No idea about OSX.
 
 * `M-x describe-minor-mode RET ph RET` shows current ph keyboard
   bindings.
-
-## BUGS
-
-* Start Emacs (opened projects == 0), open a file in some project
-  directory. Then `ph-project-open` *that* project. If the file wasn't
-  in the db it wouldn't be recorded until user kills it and opens again
-  *when* the project is open. PFX (Possible Future Fix): in
-  `ph-project-open` kill already opened buffers that may belong to the
-  project.
 
 ## Licence
 

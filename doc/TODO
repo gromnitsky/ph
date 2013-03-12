@@ -2,13 +2,9 @@
 
 * Ongoing
 
-** Sure
-
-- [X] ph-file-mv (interactive)
-- [X] rename ph-read-file to ph-file-read
-
 ** Unsure
 
+- [ ] port to Windows
 - [ ] recursive check for subprojects
 - [ ] make ph-kill-buffer-hook buffer local
 - [ ] title in modeline
