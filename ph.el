@@ -1,4 +1,46 @@
-;;; ph.el ---  -*- lexical-binding: t -*-
+;;; ph.el --- Easily open/close/switch groups of related files  -*- lexical-binding: t -*-
+
+;; Copyright (C) 2013  Alexander Gromnitsky
+
+;; Author: Alexander Gromnitsky <alexander.gromnitsky@gmail.com>
+
+;; This file is not part of GNU Emacs.
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; For a full copy of the GNU General Public License
+;; see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; `ph-mode' is a global minor mode for easy opening/closing/switching
+;; groups of related files (commonly called "projects").
+
+;; For general design see `doc/structure.org'.
+
+;; Features:
+;;
+;; * Nothing to configure.
+;; * Support any types of projects & any files.
+;; * Ido-style project files switching.
+;; * Any number of opened projects simultaneously.
+;; * Auto-remembering/-forgetting what file belongs to a project.
+;; * Open/close project files with 1 command.
+;; * Doesn't touch your Emacs configs & doesn't write anywhere except 1
+;;   special file in project directory.
+;; * Detects file moving withing project sub-directories & outside of
+;;   project directory.
+;; * Menu for quick projects switching.
+
+;;; Code:
 
 (require 'ph-venture)
 
