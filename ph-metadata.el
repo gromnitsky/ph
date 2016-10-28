@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t -*-
+;;; ph-metadata.el ---  -*- lexical-binding: t -*-
 
 (require 'json)
 
@@ -9,3 +9,4 @@
 (defconst ph-meta-name (cdr (assoc 'name ph-meta)))
 
 (provide 'ph-metadata)
+;;; ph-metadata.el ends here

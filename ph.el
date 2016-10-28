@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t -*-
+;;; ph.el ---  -*- lexical-binding: t -*-
 
 (require 'ph-venture)
 
@@ -524,3 +524,4 @@ See https://github.com/gromnitsky/ph for the help.
   '("Ph" :filter ph-menu-generate))
 
 (provide 'ph)
+;;; ph.el ends here
