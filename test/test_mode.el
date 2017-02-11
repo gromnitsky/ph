@@ -5,7 +5,7 @@
 (push (file-name-directory load-file-name) load-path)
 
 (require 'ph)
-(require 'tdd-helper)
+(require 'ph-test-helper)
 
 (setq ph-verbose -1)
 

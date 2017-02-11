@@ -63,4 +63,4 @@
 ;; setup
 (tdd-setup-global)
 
-(provide 'tdd-helper)
+(provide 'ph-test-helper)

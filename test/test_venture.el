@@ -5,7 +5,7 @@
 (push (file-name-directory load-file-name) load-path)
 
 (require 'ph-venture)
-(require 'tdd-helper)
+(require 'ph-test-helper)
 
 
 
