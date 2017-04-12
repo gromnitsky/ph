@@ -23,6 +23,9 @@
 (setq revert-without-query (quote (".*")))
 (global-auto-revert-mode)
 
+;; restore a pre-24.4 behaviour
+(setq uniquify-buffer-name-style nil)
+
 (ph-mode)
 
 
